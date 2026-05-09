@@ -1,0 +1,98 @@
+{
+  "level_2_to_level_1": {
+    "Self-direction: thought": [
+      "Be creative",
+      "Be curious",
+      "Have freedom of thought"
+    ],
+    "Self-direction: action": [
+      "Be choosing own goals",
+      "Be independent",
+      "Have freedom of action",
+      "Have privacy"
+    ],
+    "Stimulation": [
+      "Have an exciting life",
+      "Have a varied life",
+      "Be daring"
+    ],
+    "Hedonism": [
+      "Have pleasure"
+    ],
+    "Achievement": [
+      "Be ambitious",
+      "Have success",
+      "Be capable",
+      "Be intellectual",
+      "Be courageous"
+    ],
+    "Power: dominance": [
+      "Have influence",
+      "Have the right to command"
+    ],
+    "Power: resources": [
+      "Have wealth"
+    ],
+    "Face": [
+      "Have social recognition",
+      "Have a good reputation"
+    ],
+    "Security: personal": [
+      "Have a sense of belonging",
+      "Have good health",
+      "Have no debts",
+      "Be neat and tidy",
+      "Have a comfortable life"
+    ],
+    "Security: societal": [
+      "Have a safe country",
+      "Have a stable society"
+    ],
+    "Tradition": [
+      "Be respecting traditions",
+      "Be holding religious faith"
+    ],
+    "Conformity: rules": [
+      "Be compliant",
+      "Be self-disciplined",
+      "Be behaving properly"
+    ],
+    "Conformity: interpersonal": [
+      "Be polite",
+      "Be honoring elders"
+    ],
+    "Humility": [
+      "Be humble",
+      "Have life accepted as is"
+    ],
+    "Benevolence: caring": [
+      "Be helpful",
+      "Be honest",
+      "Be forgiving",
+      "Have the own family secured",
+      "Be loving"
+    ],
+    "Benevolence: dependability": [
+      "Be responsible",
+      "Have loyalty towards friends"
+    ],
+    "Universalism: concern": [
+      "Have equality",
+      "Be just",
+      "Have a world at peace"
+    ],
+    "Universalism: nature": [
+      "Be protecting the environment",
+      "Have harmony with nature",
+      "Have a world of beauty"
+    ],
+    "Universalism: tolerance": [
+      "Be broadminded",
+      "Have the wisdom to accept others"
+    ],
+    "Universalism: objectivity": [
+      "Be logical",
+      "Have an objective view"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+## Task Instruction:
+Given a factual news text unit and a target "actor", select all human value LABEL IDs from id2label that are supported by textual evidence about actor’s behavior / stance / decision / public statement, and assign polarity:
+- aligned_with_human_values: supports/embodies the value
+- contradictory_to_human_values: violates/opposes the value
+Return label IDs as STRINGS (e.g., "37", not 37).
+
+## Rules (must follow)
+1) Judge ONLY the target "actor" (ignore other actors).
+2) Use ONLY the provided input text fields; no external knowledge.
+3) You may output a label when it is either: (a) explicitly stated OR. (b) strongly implied by the actor’s described behavior/stance. * "Strongly implied" means: the text clearly states what the actor did/said/advocated/opposed, and you only map that described action/stance to the closest human value label(s). * Do NOT invent motivations, hidden goals, or facts not stated.
+4) Use ONLY allowed_label_ids. Each selected label must appear in exactly one polarity list (no duplicates, no overlap).
+5) Do not output an all-empty result. You MUST output at least one label ID (in either aligned or contradictory) from allowed_label_ids. If evidence is weak/unclear, choose the single closest label rather than returning empty.
+6) Final self-check before output: If aligned_with_human_values and contradictory_to_human_values are both empty, you MUST revise the decision and output the best single label ID from allowed_label_ids with the most appropriate polarity.
+
+## Evidence to use by unit_level
+- article: use unit_text.
+- subevent: use unit_text (evidence_sentences/context_sentences only as background).
+- story_composite_event / behavior_composite_event: use unit_text as main evidence; evidence_sentences/context_sentences only to resolve references. Do NOT add labels supported only by context.
+
+## Evidence usage
+- Main content: `unit_text` (PRIMARY evidence for label decisions).
+- `evidence_sentences` are the source sentences supporting `unit_text` (SECONDARY evidence; use to verify/ground decisions).
+- `context_sentences` are ONLY for disambiguation (pronouns/background). Do NOT add labels supported only by `context_sentences`.
+
+## Input (JSON)
+<INPUT_VALUE>
+
+## Output (STRICT JSON ONLY; no extra text; Include every label that is explicitly supported; do not omit supported labels.):
+{"aligned_with_human_values": ["<label_ids>", "..."], "contradictory_to_human_values": ["<label_ids>", "..."]}
+
+## Hard constraints:
+- Output exactly ONE valid JSON object and nothing else.
+- No duplicates.
+- Do NOT put the same label ID in both arrays.
+- The union of the two arrays MUST contain at least 1 label ID. Returning both empty is NOT allowed.

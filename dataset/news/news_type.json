@@ -1,0 +1,78 @@
+{
+  "schema": {
+    "version": "1.0",
+    "description": "Mapping from original 12 genre types (L2) to merged 6 buckets (L1) for News-Domain texts.",
+    "levels": {
+      "L1": [
+        "hard_factual_reporting",
+        "deep_factual_narrative",
+        "attribution_heavy_discourse",
+        "explainer_analysis",
+        "soft_lifestyle_consumer",
+        "non_fact_based_stress_test"
+      ],
+      "L2": [
+        "hard_news",
+        "feature_investigative",
+        "profile_biography",
+        "interview_QA",
+        "opinion_editorial",
+        "analysis_explainer",
+        "soft_news",
+        "lifestyle_culture",
+        "review_criticism",
+        "satire_humor",
+        "science_technology",
+        "other_misc"
+      ]
+    }
+  },
+  "L1_definitions": {
+    "hard_factual_reporting": "Straight factual reporting centered on concrete events (who did what, when/where), typically with clear actors and attributable actions.",
+    "deep_factual_narrative": "Narrative-driven but still fact-grounded reporting (investigations, profiles/biographies), often longer-form with richer context and implied values.",
+    "attribution_heavy_discourse": "Texts organized around explicit attributions (Q&A, interviews, quoted statements), where actor stances are expressed via direct speech.",
+    "explainer_analysis": "Explainers and analyses that synthesize facts with interpretation, background, or causal reasoning (including many science/tech explainers).",
+    "soft_lifestyle_consumer": "Soft/consumer-oriented content (lifestyle, culture, reviews) where actions and actors may be weaker or more implicit; values may be personal/experiential.",
+    "non_fact_based_stress_test": "Out-of-scope or stress-test content with stronger rhetoric, persuasion, or humor/satire; also includes miscellaneous/noisy items."
+  },
+  "mapping_L1_to_L2": {
+    "hard_factual_reporting": [
+      "hard_news"
+    ],
+    "deep_factual_narrative": [
+      "feature_investigative",
+      "profile_biography"
+    ],
+    "attribution_heavy_discourse": [
+      "interview_QA"
+    ],
+    "explainer_analysis": [
+      "analysis_explainer",
+      "science_technology"
+    ],
+    "soft_lifestyle_consumer": [
+      "soft_news",
+      "lifestyle_culture",
+      "review_criticism"
+    ],
+    "non_fact_based_stress_test": [
+      "opinion_editorial",
+      "satire_humor",
+      "other_misc"
+    ]
+  },
+  "mapping_L2_to_L1": {
+    "hard_news": "hard_factual_reporting",
+    "feature_investigative": "deep_factual_narrative",
+    "profile_biography": "deep_factual_narrative",
+    "interview_QA": "attribution_heavy_discourse",
+    "analysis_explainer": "explainer_analysis",
+    "science_technology": "explainer_analysis",
+    "soft_news": "soft_lifestyle_consumer",
+    "lifestyle_culture": "soft_lifestyle_consumer",
+    "review_criticism": "soft_lifestyle_consumer",
+    "opinion_editorial": "non_fact_based_stress_test",
+    "satire_humor": "non_fact_based_stress_test",
+    "other_misc": "non_fact_based_stress_test"
+  }
+}
