@@ -1,21 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Unified runner for:
-- G1: API LLM inference (OpenAI / Claude / Gemini / DeepSeek)  -> no training
-- G2: Open-source instruct model inference (Llama/Qwen/Ministral) -> no training
-- G3: LoRA fine-tuning + inference + evaluation
-- G4: Non-LLM retrieval baselines (TF-IDF / SBERT) -> no model fine-tuning
-- Ablation: input ablations for G1/G2/G3 without changing inference.py
+"""Ablation-study runner for the ECHV experimental pipeline.
 
-Ablation variants:
-- wo_actor
-- wo_evidence
-- wo_context
-- unit_text_only
-
-This file keeps the same debug=True / sys.argv style as the existing runner.
+The script evaluates input ablations for the same task format used by the main
+runner. Ablation variants remove or simplify selected prompt fields, such as
+actor information, evidence sentences, context sentences, or full unit context.
+It keeps separate execution paths so ablation results do not modify the main
+inference utilities.
 """
 
 from __future__ import annotations

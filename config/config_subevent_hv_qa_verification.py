@@ -1,3 +1,5 @@
+"""Configuration loader for subevent human-value QA verification scripts."""
+
 import json
 import sys
 import os

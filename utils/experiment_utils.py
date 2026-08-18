@@ -1,3 +1,5 @@
+"""Small experiment helper utilities for locating records and offsets."""
+
 import file_utils as file_utils
 
 def compute_start_index(search_guid, file_path):

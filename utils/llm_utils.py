@@ -1,3 +1,5 @@
+"""Client wrappers and response helpers for LLM API calls."""
+
 import os
 import json
 import sys
@@ -183,10 +185,10 @@ def orgranize_stream_output(stream):
         if not collecting_json:
             if "```json" in chunk:
                 collecting_json = True
-                # 截断掉前面的文字，只保留```json之后的内容
+                # Remove preceding text and keep only the content after ```json
                 json_text += chunk.split("```json")[-1]
         elif "```" in chunk:
-            # 到了结尾，去除```并结束收集
+            # At the end, remove ``` and stop collecting
             json_text += chunk.split("```")[0]
             break
         else:

@@ -1,3 +1,5 @@
+"""Combine sensitive-content checking outputs across Phase-1 subfiles."""
+
 from openai import OpenAI
 import os
 import json

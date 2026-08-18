@@ -1,3 +1,5 @@
+"""Single-process sensitive-content checking script for Phase-1 filtering."""
+
 from openai import OpenAI
 
 import os

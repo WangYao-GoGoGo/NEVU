@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""Evaluation utilities for polarity-aware multilabel human-value prediction.
+
+The evaluator represents each instance by ``(guid, unit_level, unit_id, actor)``
+and compares aligned/contradictory human-value sets at both level-1 and derived
+level-2 label spaces.
+"""
+
 from __future__ import annotations
 
 import os
@@ -54,7 +61,7 @@ from typing import Iterable
 
 from peft import PeftModel
 
-# ===== ADD 1) 在 imports 里补充（文件顶部 import 区域） =====
+# ===== ADD 1) Added in the import section at the top of the file =====
 from typing import Optional
 
 try:
@@ -140,7 +147,7 @@ def build_eval_report_l1_and_l2_from_l1(
     l1tol2_mapping_path: str,
 ) -> Dict[str, Any]:
     l1_to_l2 = load_json(l1tol2_mapping_path)
-    # L1 (带 DRR)
+    # L1 with DRR
     l1_report = build_eval_views(gold_l1, pred_l1, label_space="L1", compute_drr=True)
 
     # L2 derived from L1
@@ -229,7 +236,7 @@ def macro_prf_gold_supported(
 def split_dir_value(label: str) -> Tuple[str, str]:
     """
     label format: "{dir}:{value_id}"  e.g., "1:42"
-    dir: "1" aligned, "0" contradictory   (保持与你现有 flatten 逻辑一致)
+    dir: "1" aligned, "0" contradictory   (keep this consistent with the existing flattening logic)
     """
     d, v = label.split(":", 1)
     return d, v
@@ -240,9 +247,9 @@ def direction_reverse_rate_gold_excl(
 ) -> Tuple[float, int, int, int]:
     """
     DRR (gold-exclusive):
-    - 如果某个 value 在 GOLD 中同 instance 出现了 aligned 和 contradictory 两种方向 => ambiguous，排除不计入分母
-    - 只在 gold 的“方向唯一”的 value 上统计翻转：
-        gold_only_aligned 被预测到了 contra，或 gold_only_contra 被预测到了 aligned
+    - If a value appears as both aligned and contradictory for the same gold instance, mark it ambiguous and exclude it from the denominator
+    - Count direction reversals only for values with a unique gold direction:
+        gold_only_aligned predicted as contra, or gold_only_contra predicted as aligned
     """
     instances = set(gold_sets.keys()) | set(pred_sets.keys())
     reverse_total = 0

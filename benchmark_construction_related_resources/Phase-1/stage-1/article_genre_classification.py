@@ -1,3 +1,5 @@
+"""Classify collected news articles into event genres for Phase-1 filtering."""
+
 import os
 import json
 import sys
@@ -30,7 +32,7 @@ def tokenize_and_truncate(content, max_length, tokenizer):
 classifier = pipeline("zero-shot-classification",
                       model="knowledgator/comprehend_it-base")
 
-# 分类函数
+# Classification function
 def classify_news(articles, types, classification_pipeline, output_article_genres_file, max_length, max_save_count, process_start):
     # classifications = []
     classifications_results = []
@@ -40,7 +42,7 @@ def classify_news(articles, types, classification_pipeline, output_article_genre
         start_time = time.time()
         article_content = article["content"]
 
-        # 截取文章内容，避免超过模型输入限制
+        # Truncate article content to avoid exceeding the model input limit
         # max_length = 512  # Limit to 512 tokens
         truncated_content = tokenize_and_truncate(article_content, max_length, classification_pipeline.tokenizer)
 
@@ -52,19 +54,19 @@ def classify_news(articles, types, classification_pipeline, output_article_genre
         # sequence_to_classify = "one day I will see the world"
         # candidate_labels = ['travel', 'cooking', 'dancing']
         result = classifier(truncated_content, types)
-        # top_categories = list(zip(result["labels"][:3], result["scores"][:3]))  # 获取分数前三的结果
+        # top_categories = list(zip(result["labels"][:3], result["scores"][:3]))  # Get the top-scoring results
 
-        # 按分数排序并获取分数最高的前三个结果
+        # Sort by score and get the highest-scoring results
         sorted_results = sorted(zip(result["labels"], result["scores"]), key=lambda x: x[1], reverse=True)
-        top_categories = sorted_results[:1]  # 获取分数前三的结果
+        top_categories = sorted_results[:1]  # Get the top-scoring results
 
         # classifications.append((article, top_categories))
 
-        # 提取 labels 和 scores
+        # Extract labels and scores
         # labels = result['labels'][:3]
         # scores = result['scores'][:3]
 
-        # 打印结果
+        # Print results
         # for label, score in top_categories:
 
         #     print(f"Label: {label}, Score: {score}")
@@ -115,8 +117,8 @@ if __name__ == '__main__':
     max_save_count = config.max_save_count
 
 
-    # 初始化LLAMA2模型和分词器
-    # model_name = "meta-llama/Llama-2-7b-chat-hf"  # 替换为适当的模型名称
+    # Initialize the LLAMA2 model and tokenizer
+    # model_name = "meta-llama/Llama-2-7b-chat-hf"  # Replace with an appropriate model name
 
     # tokenizer_path = "/home/iiserver33/.cache/huggingface/hub/models--meta-llama--Llama-2-7b-chat-hf/"
     # model_path = "/home/iiserver33/.cache/huggingface/hub/models--meta-llama--Llama-2-7b-chat-hf/"
@@ -127,9 +129,9 @@ if __name__ == '__main__':
 
     article_genres = event_genres.genre
 
-    # 对新闻进行分类
+    # Classify news articles
     classify_news(datas, article_genres, cla_pipeline, output_article_genres_file, max_length, max_save_count, process_start)
 
-    # 输出分类结果
+    # Output classification results
     # for article, category in results:
     #     print(f"News: {article}\nPredicted Category: {category}\n")

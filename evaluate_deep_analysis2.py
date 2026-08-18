@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""Extended analysis utilities for benchmark result inspection.
+
+This script supports deeper comparisons across prediction files, label levels,
+news types, unit levels, and controlled-grouping outputs. It is intended for
+post-hoc analysis rather than for the primary inference pipeline.
+"""
+
 from __future__ import annotations
 
 import re
@@ -553,8 +560,8 @@ def guess_model_hint_from_run_dir(run_dir_name: str) -> str:
         return "Qwen"
     return run_dir_name.split("_")[0]
 
-def find_pseudo_pred_for_model(pseudo_pred_dir: str, model_hint: str) -> Optional[str]:
-    p = Path(pseudo_pred_dir)
+def find_cgt_pred_for_model(cgt_pred_dir: str, model_hint: str) -> Optional[str]:
+    p = Path(cgt_pred_dir)
     if not p.exists():
         return None
     cand = []
@@ -685,9 +692,9 @@ def run_eval2(gold_path: str, full_pred_dir: str, out_dir: str, l1_to_l2: Dict[s
 # ----------------------------
 # Eval-3
 # ----------------------------
-def run_eval3(gold_sampled_path: str, gold_pseudo_path: str, full_pred_dir: str, pseudo_pred_dir: str, out_dir: str, l1_to_l2: Dict[str,str], l2_size: int) -> None:
+def run_eval3(gold_sampled_path: str, gold_cgt_path: str, full_pred_dir: str, cgt_pred_dir: str, out_dir: str, l1_to_l2: Dict[str,str], l2_size: int) -> None:
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    gold = load_pred_like(gold_pseudo_path)
+    gold = load_pred_like(gold_cgt_path)
     levels = ["behavior_chain", "story_narrative"]
     gold_main = {iid: v for iid, v in gold.items() if iid[1] in levels}
 
@@ -715,19 +722,19 @@ def run_eval3(gold_sampled_path: str, gold_pseudo_path: str, full_pred_dir: str,
         # rep_A = eval_dual_space(gold_main, pred_full_main, l1_to_l2, l2_size, per_levels=levels)
         rep_A = eval_dual_space(gold_full_main, pred_full_main, l1_to_l2, l2_size, per_levels=levels)
 
-        pseudo_pred_file = find_pseudo_pred_for_model(pseudo_pred_dir, model_hint)
-        if pseudo_pred_file:
-            pred_pseudo_all = load_pred_like(pseudo_pred_file)
-            pred_pseudo_sub = subset_pred_by_gold(gold, pred_pseudo_all)
-            pred_pseudo_main = {iid: v for iid, v in pred_pseudo_sub.items() if iid[1] in levels}
-            rep_B = eval_dual_space(gold_main, pred_pseudo_main, l1_to_l2, l2_size, per_levels=levels)
+        cgt_pred_file = find_cgt_pred_for_model(cgt_pred_dir, model_hint)
+        if cgt_pred_file:
+            pred_cgt_all = load_pred_like(cgt_pred_file)
+            pred_cgt_sub = subset_pred_by_gold(gold, pred_cgt_all)
+            pred_cgt_main = {iid: v for iid, v in pred_cgt_sub.items() if iid[1] in levels}
+            rep_B = eval_dual_space(gold_main, pred_cgt_main, l1_to_l2, l2_size, per_levels=levels)
         else:
-            rep_B = {"error": f"pseudo pred not found for model_hint={model_hint}"}
+            rep_B = {"error": f"cgt pred not found for model_hint={model_hint}"}
 
-        rep = {"A_full_pred": rep_A, "B_pseudo_pred": rep_B, "model_hint": model_hint, "pseudo_pred_file": pseudo_pred_file}
+        rep = {"A_full_pred": rep_A, "B_cgt_pred": rep_B, "model_hint": model_hint, "cgt_pred_file": cgt_pred_file}
         dump_json(rep, str(Path(out_dir)/f"{run_dir}.json"))
 
-        row = {"model_run": run_dir, "model_hint": model_hint, "full_pred_file": full_pred_file, "pseudo_pred_file": pseudo_pred_file or ""}
+        row = {"model_run": run_dir, "model_hint": model_hint, "full_pred_file": full_pred_file, "cgt_pred_file": cgt_pred_file or ""}
         row.update(flatten_report_for_csv("eval3.A.level1", rep_A["level1"]))
         row.update(flatten_report_for_csv("eval3.A.level2", rep_A["level2_from_level1"]))
         if isinstance(rep_B, dict) and "level1" in rep_B and "level2_from_level1" in rep_B:
@@ -796,10 +803,10 @@ def main():
                     help="output root folder")
 
     ap.add_argument("--gold_sampled", type=str, default="dataset/deep_analysis/test/gold_sampled.json")
-    ap.add_argument("--gold_pseudo", type=str, default="dataset/deep_analysis/test/psedo_BCE_SCE_test_gold.json")
+    ap.add_argument("--gold_cgt", type=str, default="dataset/deep_analysis/test/cgt_BCE_SCE_test_gold.json")
 
     ap.add_argument("--full_pred_dir", type=str, default="results/deep_analysis/G3/full")
-    ap.add_argument("--pseudo_pred_dir", type=str, default="results/deep_analysis/G3/pseudo")
+    ap.add_argument("--cgt_pred_dir", type=str, default="results/deep_analysis/G3/cgt")
 
     # IMPORTANT: root is the folder that directly contains Current/ Background_Analysis/ Feature/
     ap.add_argument("--news_type_gold_root", type=str, default="dataset/deep_analysis/test/A1_expand_match_by_feature64")
@@ -812,9 +819,9 @@ def main():
     project_root = Path(args.project_root).expanduser().resolve()
 
     gold_sampled_path = str(resolve_path(args.gold_sampled, project_root))
-    gold_pseudo_path = str(resolve_path(args.gold_pseudo, project_root))
+    gold_cgt_path = str(resolve_path(args.gold_cgt, project_root))
     full_pred_dir = str(resolve_path(args.full_pred_dir, project_root))
-    pseudo_pred_dir = str(resolve_path(args.pseudo_pred_dir, project_root))
+    cgt_pred_dir = str(resolve_path(args.cgt_pred_dir, project_root))
     news_type_gold_root = str(resolve_path(args.news_type_gold_root, project_root))
 
     out_root = resolve_path(args.out_root, project_root)
@@ -829,7 +836,7 @@ def main():
     run_eval2(gold_sampled_path, full_pred_dir, str(out_root / "eval2_aggregation"), l1_to_l2, l2_size)
 
     # Eval-3
-    run_eval3(gold_sampled_path, gold_pseudo_path, full_pred_dir, pseudo_pred_dir, str(out_root / "eval3_pseudo_compare"), l1_to_l2, l2_size)
+    run_eval3(gold_sampled_path, gold_cgt_path, full_pred_dir, cgt_pred_dir, str(out_root / "eval3_cgt_compare"), l1_to_l2, l2_size)
 
     # Eval-4
     run_eval4_news_type(news_type_gold_root, full_pred_dir, str(out_root / "eval4_news_type"), l1_to_l2, l2_size)

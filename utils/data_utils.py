@@ -1,3 +1,10 @@
+"""Data loading, formatting, payload construction, and prediction utilities.
+
+This module contains shared helpers for converting event and human-value label
+files into instance-keyed dictionaries, building model input payloads for each
+unit level, sampling balanced subsets, and normalizing model predictions.
+"""
+
 import os
 import json
 import sys
@@ -160,7 +167,7 @@ def get_behaviors_by_ids(behavior_chains, behavior_ids_chains):
                 if b.get("id") in target_ids:
                     result[title].append(b)
 
-    # 按 order 排序（字符串转 int，防止 '10' < '2'）
+    # Sort by order, converting strings to int so '10' does not come before '2'
     for title in result:
         result[title] = sorted(
             result[title],
@@ -279,7 +286,7 @@ def find_related_mappings(related_subevent_ids, mapping_results):
 
 def compute_actor_importance(related_mappings, w1=0.6, w2=0.4, normalize=True, smooth=True):
     """
-    计算每个 actor 的重要度（平滑归一化版本）
+    Compute each actor's importance score with smoothed normalization
     """
     relevance_ranges = {
         "yes": (0.8, 1.0),
@@ -294,7 +301,7 @@ def compute_actor_importance(related_mappings, w1=0.6, w2=0.4, normalize=True, s
 
     actor_scores = {}
 
-    # 计算每个 actor 的累积得分
+    # Compute each actor's accumulated score
     for sent in related_mappings:
         if "actors" not in sent:
             print("test")
@@ -306,14 +313,14 @@ def compute_actor_importance(related_mappings, w1=0.6, w2=0.4, normalize=True, s
             score = rel_weight * w1 + conf * w2
             actor_scores[actor] = actor_scores.get(actor, 0.0) + score
 
-    # 平滑归一化
+    # Smoothed normalization
     if normalize and actor_scores:
         vals = np.array(list(actor_scores.values()))
         min_v, max_v = vals.min(), vals.max()
 
         if max_v - min_v > 1e-8:
             if smooth:
-                eps = 0.1  # 缓冲区，控制上下限不至于0/1
+                eps = 0.1  # buffer to keep bounds away from 0 and 1
                 for k in actor_scores:
                     norm = (actor_scores[k] - min_v) / (max_v - min_v)
                     actor_scores[k] = eps + (1 - 2*eps) * norm
@@ -322,16 +329,16 @@ def compute_actor_importance(related_mappings, w1=0.6, w2=0.4, normalize=True, s
                     actor_scores[k] = (actor_scores[k] - min_v) / (max_v - min_v)
         else:
             for k in actor_scores:
-                actor_scores[k] = 0.5  # 全部相等时给个中性分
+                actor_scores[k] = 0.5  # Assign a neutral score when all values are equal
     return actor_scores
 
 def compute_hv_importance(impact_result, w1=0.6, w2=0.4, normalize=True, smooth=True):
     """
-    根据 removal_impact_decision + confidence 计算每个 (actor, human_value_label) 的重要程度。
+    Compute the importance of each (actor, human_value_label) from removal_impact_decision and confidence.
 
-    参数:
+    Args:
         data: list[dict]
-            每个元素格式:
+            Each element format:
             {
                 "actor": str,
                 "human_value_label": str,
@@ -339,16 +346,16 @@ def compute_hv_importance(impact_result, w1=0.6, w2=0.4, normalize=True, smooth=
                 "confidence": "9.00e-01"
             }
         w1, w2: float
-            relevance 与 confidence 的权重比例
+            Weighting ratio between relevance and confidence
         normalize: bool
-            是否归一化到 [0,1]
+            Whether to normalize to [0, 1]
         smooth: bool
-            是否使用 soft normalization（防止 0/1 极端值）
-    返回:
+            Whether to use soft normalization to avoid extreme 0/1 values
+    Returns:
         dict { (actor, human_value_label): importance_score }
     """
 
-    # 定义每种 decision 的语义区间
+    # Define the semantic interval for each decision
     decision_ranges = {
         "yes": (0.8, 1.0),
         "partial": (0.4, 0.7),
@@ -356,14 +363,14 @@ def compute_hv_importance(impact_result, w1=0.6, w2=0.4, normalize=True, smooth=
     }
 
     def map_decision_value(decision, conf):
-        """根据决策与置信度映射到连续权重"""
+        """Map decision and confidence to a continuous weight"""
         decision = decision.lower()
         low, high = decision_ranges.get(decision, (0.0, 0.0))
         return low + (high - low) * conf
 
     value_scores = {}
 
-    # 遍历所有记录
+    # Iterate over all records
     for item in impact_result:
         actor = item["actor"]
         value = item["human_value_label"]
@@ -376,14 +383,14 @@ def compute_hv_importance(impact_result, w1=0.6, w2=0.4, normalize=True, smooth=
         score = dec_weight * w1 + conf * w2
         value_scores[key] = value_scores.get(key, 0.0) + score
 
-    # 平滑归一化
+    # Smoothed normalization
     if normalize and value_scores:
         vals = np.array(list(value_scores.values()))
         min_v, max_v = vals.min(), vals.max()
 
         if max_v - min_v > 1e-8:
             if smooth:
-                eps = 0.1  # 控制上下限，避免0/1极端
+                eps = 0.1  # control bounds to avoid extreme 0/1 values
                 for k in value_scores:
                     norm = (value_scores[k] - min_v) / (max_v - min_v)
                     value_scores[k] = eps + (1 - 2 * eps) * norm
@@ -392,7 +399,7 @@ def compute_hv_importance(impact_result, w1=0.6, w2=0.4, normalize=True, smooth=
                     value_scores[k] = (value_scores[k] - min_v) / (max_v - min_v)
         else:
             for k in value_scores:
-                value_scores[k] = 0.5  # 全部相等时给个中性分
+                value_scores[k] = 0.5  # Assign a neutral score when all values are equal
 
     return value_scores
 
@@ -494,18 +501,18 @@ def _uniq_keep_order(xs: List[str]) -> List[str]:
 
 from typing import Any, Dict, List, Tuple
 
-def _behavior_chain_unit_text_and_related_pseudo(
+def _behavior_chain_unit_text_and_related_cgt(
     e: Dict[str, Any],
-    behavior_ids: List[str],   # 保留签名以兼容外部调用（但不使用）
+    behavior_ids: List[str],   # Keep the signature for external compatibility, but do not use this argument
     related_ids: List[str],
 ) -> Tuple[str, str]:
     """
-    只拼接子事件文本（related_ids 指定的 subevent）。
-    输出: (unit_title, unit_text)
+    Concatenate only subevent text selected by related_ids.
+    Return: (unit_title, unit_text)
 
-    unit_text 格式（单行）:
+    unit_text format, single line:
       "Subevents: [<subevent_text_1>; <subevent_text_2>; ...]"
-    若 related_ids 为空，则:
+    If related_ids is empty:
       "Subevents: []"
     """
     sub_texts: List[str] = []
@@ -532,16 +539,16 @@ def _behavior_chain_unit_text_and_related(
     behavior_ids: List[str],
 ) -> Tuple[str, str, List[str]]:
     """
-    输入: behavior_ids (如 ["0","1","2","3"])
-    输出: (unit_title, unit_text, related_subevent_ids)
+    Input: behavior_ids, e.g. ["0", "1", "2", "3"]
+    Return: (unit_title, unit_text, related_subevent_ids)
 
-    unit_text 格式（每行一条 behavior）:
+    unit_text format, one behavior per line:
       "<behavior_text>: [<subevent_text_1>; <subevent_text_2>; ...]"
-    行与行之间用 "\n" 连接
+    Lines are joined with "\n"
 
     related_ids:
-      - 只要 subevent_id 字段存在且不为 None，就加入 related_ids（按原值转成 str）
-      - subevent_id 缺失或为 None，就跳过
+      - Add subevent_id to related_ids whenever it exists and is not None, converted to str
+      - Skip missing or None subevent_id values
     """
     id_set: Set[str] = {str(x) for x in behavior_ids}
 
@@ -573,7 +580,7 @@ def _behavior_chain_unit_text_and_related(
             if isinstance(se_txt, str) and se_txt.strip():
                 sub_texts.append(se_txt.strip())
 
-        # 组装成你要的格式：behavior: [subevents]
+        # Assemble in the expected format: behavior: [subevents]
         if sub_texts:
             sub_str = "; ".join(sub_texts)
             lines.append(f"{behavior_txt}: [{sub_str}]")
@@ -586,9 +593,9 @@ def _behavior_chain_unit_text_and_related(
 
     return unit_title, unit_text, related_ids
 
-def _story_unit_text_and_related_pseudo(
+def _story_unit_text_and_related_cgt(
     e: Dict[str, Any],
-    st_id: str,               # 保留签名兼容（这里不使用）
+    st_id: str,               # Keep the signature for compatibility; unused here
     related_ids: List[str]
 ) -> Tuple[str, str]:
     sub_texts: List[str] = []
@@ -613,14 +620,14 @@ def _story_unit_text_and_related(e: Dict[str, Any], st_id: str) -> Tuple[str, st
     if not st:
         return "", "", []
     else:
-        # 原样保留：title / description / related
+        # Preserve title, description, and related fields
         unit_title = str(st.get("title", "")).strip()
         desc = str(st.get("description", "")).strip()
 
         related = st.get("related_subevent_ids", []) or []
         related = [str(x) for x in related] if isinstance(related, list) else []
 
-        #  只改 unit_text：Title: description \n Subevents \n <subevent texts...>
+        #  Only change unit_text: Title: description \n Subevents \n <subevent texts...>
         sub_texts: List[str] = []
         for sid in related:
             txt = _find_subevent_text(e, sid)
@@ -843,7 +850,7 @@ def get_neighbor_context_sentences(
     """
     sents = data.get("sentences", [])
     if not isinstance(sents, list):
-        return [], []   #  修复：永远返回两个值
+        return [], []   #  Fix: always return two values
 
     # Build map: sentence_id(str) -> text, only for type == "sentence"
     id2text: Dict[str, str] = {}
@@ -869,7 +876,7 @@ def get_neighbor_context_sentences(
             max_id = sid_int
 
     if max_id < 0:
-        return [], []   #  修复
+        return [], []   # Fix.
 
     # normalize target set to int for boundary checks + membership
     target_set: Set[int] = set()
@@ -963,7 +970,7 @@ def build_input_payload(
         "id2label": allowed
     }
 
-def build_input_payload_pseudo(
+def build_input_payload_cgt(
     e: Dict[str, Any],
     iid: InstanceId,
     label_space: str,
@@ -995,11 +1002,11 @@ def build_input_payload_pseudo(
     elif unit_level == "behavior_chain":
         # related_ids = e["random_subevent_ids"]
         unit_title = ""
-        unit_title, unit_text = _behavior_chain_unit_text_and_related_pseudo(e, unit_id, related_ids)
+        unit_title, unit_text = _behavior_chain_unit_text_and_related_cgt(e, unit_id, related_ids)
         # linked = _get_linked_subevents(e, related_ids)
         sentence_ids = get_sentence_ids_by_subevent_ids(e, related_ids)
     elif unit_level == "story_narrative":
-        unit_title, unit_text = _story_unit_text_and_related_pseudo(e, unit_id, related_ids)
+        unit_title, unit_text = _story_unit_text_and_related_cgt(e, unit_id, related_ids)
         # linked = _get_linked_subevents(e, related_ids, related_ids)
         sentence_ids = get_sentence_ids_by_subevent_ids(e, related_ids)
     else:
@@ -1120,18 +1127,18 @@ def ensure_gold_dict(
         gold_like: Any
 ) -> Dict[InstanceId, Dict[str, Set[str]]]:
     """
-    兼容两种格式：
-      1) dict[InstanceId, dict] (原始格式)
-      2) list[dict] (从JSON加载的格式)
+    Support two formats:
+      1) dict[InstanceId, dict] (original format)
+      2) list[dict] (format loaded from JSON)
     """
     if isinstance(gold_like, dict):
-        # 已经是正确格式
+        # Already in the correct format
         return gold_like
 
     if not isinstance(gold_like, list):
         raise TypeError(f"gold must be dict or list[dict], got {type(gold_like)}")
 
-    # 转换 list 格式到 dict 格式
+    # Convert list format to dict format
     gold: Dict[InstanceId, Dict[str, Set[str]]] = {}
     for r in gold_like:
         if not isinstance(r, dict):
@@ -1158,7 +1165,7 @@ def ensure_gold_dict(
 
 
 def _get_phase(events_by_guid: Dict[str, Dict[str, Any]], guid: str) -> str:
-    """从 events 中获取 phase_version"""
+    """Get phase_version from events"""
     e = events_by_guid.get(guid)
     if isinstance(e, dict):
         pv = str(e.get("phase_version", "")).strip()
@@ -1167,7 +1174,7 @@ def _get_phase(events_by_guid: Dict[str, Dict[str, Any]], guid: str) -> str:
 
 
 def sample_gold_instances_balanced(
-        gold: Any,  # 兼容 list 或 dict
+        gold: Any,  # support list or dict
         events_by_guid: Dict[str, Dict[str, Any]],
         n: int,
         *,
@@ -1177,19 +1184,19 @@ def sample_gold_instances_balanced(
         level_targets: Optional[Dict[str, int]] = None,
 ) -> Dict[InstanceId, Dict[str, Set[str]]]:
     """
-    多约束均衡采样：
-      1) phase_version (v1/v2) 均衡
-      2) unit_level (4种) 均衡
-      3) label (54类) 均衡（最优先）
+    Balanced sampling with multiple constraints:
+      1) Balance phase_version (v1/v2)
+      2) Balance unit_level (4 types)
+      3) Balance labels (54 classes; highest priority)
     """
-    #  关键修复：确保格式统一
+    #  Important fix: ensure a consistent format
 
     if n <= 0 or n >= len(gold):
         return gold
 
     rng = random.Random(seed)
 
-    # --------- 准备数据结构 ----------
+    # --------- Prepare data structures ----------
     iids = list(gold.keys())
 
     iid2labels: Dict[InstanceId, Set[str]] = {}
@@ -1199,7 +1206,7 @@ def sample_gold_instances_balanced(
     # label -> [iid...]
     label2iids: Dict[str, List[InstanceId]] = {lab: [] for lab in label_universe}
 
-    # 全局 label 频次（用于稀有优先）
+    # Global label frequencies for rare-label priority
     global_label_freq = Counter()
 
     for iid in iids:
@@ -1222,11 +1229,11 @@ def sample_gold_instances_balanced(
             label2iids[lab].append(iid)
             global_label_freq[lab] += 1
 
-    # 打乱每个 label 的候选列表
+    # Shuffle candidate lists for each label
     for lab in label_universe:
         rng.shuffle(label2iids[lab])
 
-    # --------- 目标配额 ----------
+    # --------- Target quotas ----------
     if phase_targets is None:
         phase_targets = {"v1": n // 2, "v2": n - (n // 2)}
 
@@ -1238,30 +1245,30 @@ def sample_gold_instances_balanced(
         for i in range(rem):
             level_targets[levels[i]] += 1
 
-    # --------- 采样主循环 ----------
+    # --------- Main sampling loop ----------
     selected: Set[InstanceId] = set()
     label_count = Counter({lab: 0 for lab in label_universe})
     phase_count = Counter()
     level_count = Counter()
 
-    # 每个 label 的扫描指针
+    # Scan pointer for each label
     ptr = {lab: 0 for lab in label_universe}
 
-    #  关键修复：记录已耗尽的 label
+    #  Important fix: record exhausted labels
     exhausted_labels: Set[str] = set()
 
     def _can_take(iid: InstanceId) -> bool:
-        """检查 phase/level 约束"""
+        """Check phase/level constraints"""
         pv = iid2phase.get(iid, "unknown")
         lv = iid2level.get(iid, "")
 
-        # phase 约束（只对 v1/v2）
+        # Phase constraint, only for v1/v2
         if pv in ("v1", "v2"):
             other = "v2" if pv == "v1" else "v1"
             if phase_count[pv] >= phase_targets.get(pv, 0) and phase_count[other] < phase_targets.get(other, 0):
                 return False
 
-        # level 约束
+        # Level constraint
         if lv in level_targets:
             deficits = {k: level_targets[k] - level_count[k] for k in level_targets}
             max_need_lv = max(deficits, key=lambda k: deficits[k])
@@ -1271,7 +1278,7 @@ def sample_gold_instances_balanced(
         return True
 
     def _pick_neediest_label() -> Optional[str]:
-        """选择当前最需要的 label（排除已耗尽的）"""
+        """Select the currently most needed label, excluding exhausted labels"""
         available = [lab for lab in label_universe if lab not in exhausted_labels]
         if not available:
             return None
@@ -1281,7 +1288,7 @@ def sample_gold_instances_balanced(
             key=lambda lab: (label_count[lab], global_label_freq.get(lab, 10 ** 9))
         )
 
-    max_iterations = len(gold) * 10  #  防止真正的死循环
+    max_iterations = len(gold) * 10  #  Prevent a real infinite loop
     iteration = 0
 
     while len(selected) < n and iteration < max_iterations:
@@ -1289,7 +1296,7 @@ def sample_gold_instances_balanced(
 
         lab = _pick_neediest_label()
         if lab is None:
-            # 所有 label 都耗尽了，随机补齐
+            # All labels are exhausted; fill the remainder randomly
             remaining = [iid for iid in iid2labels.keys() if iid not in selected]
             if not remaining:
                 break
@@ -1307,7 +1314,7 @@ def sample_gold_instances_balanced(
         candidates = label2iids.get(lab, [])
         chosen = None
 
-        # 1) 优先找满足 phase/level 的
+        # 1) First search for a candidate satisfying phase/level constraints
         i = ptr[lab]
         while i < len(candidates):
             iid = candidates[i]
@@ -1319,7 +1326,7 @@ def sample_gold_instances_balanced(
                 break
         ptr[lab] = i
 
-        # 2) 放宽约束
+        # 2) Relax constraints
         if chosen is None:
             i = ptr[lab]
             while i < len(candidates):
@@ -1331,12 +1338,12 @@ def sample_gold_instances_balanced(
                 break
             ptr[lab] = i
 
-        #  关键修复：如果该 label 已扫描完，标记为 exhausted
+        # Important fix: if this label has been fully scanned, mark it exhausted.
         if chosen is None:
             exhausted_labels.add(lab)
             continue
 
-        # 添加选中的实例
+        # Add the selected instance
         selected.add(chosen)
         pv = iid2phase.get(chosen, "unknown")
         lv = iid2level.get(chosen, "")
@@ -1359,7 +1366,7 @@ def summarize_sampled_gold(
         events_by_guid: Dict[str, Dict[str, Any]],
         label_universe: List[str],
 ) -> Dict[str, Any]:
-    """统计采样结果"""
+    """Summarize sampling results"""
     phase_cnt = Counter()
     level_cnt = Counter()
     label_cnt = Counter({lab: 0 for lab in label_universe})
@@ -1418,7 +1425,7 @@ def summarize_sampled_gold(
 def gold_to_jsonable_rows(
         gold: Dict[InstanceId, Dict[str, Set[str]]]
 ) -> List[Dict[str, Any]]:
-    """转换为可保存的 JSON 格式"""
+    """Convert to a JSON-serializable format"""
     rows = []
     for (guid, unit_level, unit_id, actor), g in gold.items():
         rows.append({
@@ -1431,11 +1438,11 @@ def gold_to_jsonable_rows(
         })
     return rows
 
-def list_to_pseudo_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId, Dict[str, Set[str]]]:
+def list_to_cgt_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId, Dict[str, Set[str]]]:
     """
-    将 list[dict] 格式转换为 dict[InstanceId, dict] 格式
+    Convert list[dict] format to dict[InstanceId, dict] format
 
-    输入格式：
+    Input format:
     [
         {
             'guid': 'xxx',
@@ -1448,7 +1455,7 @@ def list_to_pseudo_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId
         ...
     ]
 
-    输出格式：
+    Output format:
     {
         ('guid', 'unit_level', 'unit_id', 'actor'): {
             'aligned': {'11', '25'},
@@ -1463,23 +1470,23 @@ def list_to_pseudo_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId
         if not isinstance(item, dict):
             continue
 
-        # 提取四个关键字段
+        # Extract the four key fields
         guid = str(item.get("guid", "")).strip()
         unit_level = str(item.get("unit_level", "")).strip()
         unit_id = str(item.get("unit_id", "") if item.get("unit_id") is not None else "").strip()
         actor = str(item.get("actor", "")).strip()
         random_subevent_ids = str(item.get("random_subevent_ids", "") if item.get("random_subevent_ids") is not None else "").strip()
 
-        # 必须字段检查
+        # Check required fields
         if not guid or not unit_level or not actor:
             print(f"[WARNING] Skipping item with missing fields: guid={guid}, unit_level={unit_level}, actor={actor}")
             continue
 
-        # 提取 aligned 和 contradictory
+        # Extract aligned and contradictory labels
         aligned_raw = item.get("aligned", [])
         contradictory_raw = item.get("contradictory", [])
 
-        # 转换为 set[str]
+        # Convert to set[str]
         aligned = set()
         if isinstance(aligned_raw, list):
             aligned = {str(x).strip() for x in aligned_raw if x is not None and str(x).strip()}
@@ -1492,10 +1499,10 @@ def list_to_pseudo_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId
         elif contradictory_raw is not None:
             contradictory = {str(contradictory_raw).strip()}
 
-        # 构造 key
+        # Build the key
         iid: InstanceId = (guid, unit_level, unit_id, actor)
 
-        # 如果同一个 iid 出现多次，合并标签（理论上不应该出现）
+        # If the same iid appears multiple times, merge labels; this should not happen in theory
         if iid in gold:
             print(f"[WARNING] Duplicate iid found: {iid}, merging labels")
             gold[iid]["aligned"] |= aligned
@@ -1511,9 +1518,9 @@ def list_to_pseudo_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId
 
 def list_to_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId, Dict[str, Set[str]]]:
     """
-    将 list[dict] 格式转换为 dict[InstanceId, dict] 格式
+    Convert list[dict] format to dict[InstanceId, dict] format
 
-    输入格式：
+    Input format:
     [
         {
             'guid': 'xxx',
@@ -1526,7 +1533,7 @@ def list_to_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId, Dict[
         ...
     ]
 
-    输出格式：
+    Output format:
     {
         ('guid', 'unit_level', 'unit_id', 'actor'): {
             'aligned': {'11', '25'},
@@ -1541,22 +1548,22 @@ def list_to_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId, Dict[
         if not isinstance(item, dict):
             continue
 
-        # 提取四个关键字段
+        # Extract the four key fields
         guid = str(item.get("guid", "")).strip()
         unit_level = str(item.get("unit_level", "")).strip()
         unit_id = str(item.get("unit_id", "") if item.get("unit_id") is not None else "").strip()
         actor = str(item.get("actor", "")).strip()
 
-        # 必须字段检查
+        # Check required fields
         if not guid or not unit_level or not actor:
             print(f"[WARNING] Skipping item with missing fields: guid={guid}, unit_level={unit_level}, actor={actor}")
             continue
 
-        # 提取 aligned 和 contradictory
+        # Extract aligned and contradictory labels
         aligned_raw = item.get("aligned", [])
         contradictory_raw = item.get("contradictory", [])
 
-        # 转换为 set[str]
+        # Convert to set[str]
         aligned = set()
         if isinstance(aligned_raw, list):
             aligned = {str(x).strip() for x in aligned_raw if x is not None and str(x).strip()}
@@ -1569,10 +1576,10 @@ def list_to_gold_dict(data_list: List[Dict[str, Any]]) -> Dict[InstanceId, Dict[
         elif contradictory_raw is not None:
             contradictory = {str(contradictory_raw).strip()}
 
-        # 构造 key
+        # Build the key
         iid: InstanceId = (guid, unit_level, unit_id, actor)
 
-        # 如果同一个 iid 出现多次，合并标签（理论上不应该出现）
+        # If the same iid appears multiple times, merge labels; this should not happen in theory
         if iid in gold:
             print(f"[WARNING] Duplicate iid found: {iid}, merging labels")
             gold[iid]["aligned"] |= aligned
@@ -1656,7 +1663,7 @@ def process_and_store_bak(filename, data_list, client):
                 comp_content = "{}"
 
             if api_model.startswith("claude"):
-                # 清理空格
+                # Clean whitespace
                 result_con = comp_content.strip()
             else:
                 match = re.search(r"```json\s*(.*?)\s*```", comp_content, re.DOTALL)
@@ -1664,7 +1671,7 @@ def process_and_store_bak(filename, data_list, client):
                     result_con = match.group(1)
                 else:
                     result_con = comp_content
-                    print("没有找到 JSON 部分")
+                    print("No JSON section found")
 
             # current news
             json_object = json.loads(result_con)
@@ -1710,7 +1717,7 @@ def process_and_store(filename, data_list, client):
         api_model = prompt_con["model_name"]
         content2 = prompt_con["user_prompt"]
 
-        #  MapReduce 可选参数（默认 False，不影响旧逻辑）
+        #  Optional MapReduce parameters, default False and backward-compatible
         use_mr = bool(prompt_con.get("use_map_reduce", False))
         payload = prompt_con.get("payload")
         prompt_variant = prompt_con.get("prompt_variant")
@@ -1731,9 +1738,9 @@ def process_and_store(filename, data_list, client):
             start_time = time.time()
 
             final_obj = None
-            completion = None  #  防止 MR 分支里没定义 completion，后面引用报错
+            completion = None  #  Prevent completion from being undefined in the MR branch
 
-            # ======  MapReduce 分支：只在 (use_mr && 有payload/模板 && 超长) 时触发 ======
+            # ====== MapReduce branch: triggered only when use_mr, payload/template exists, and input is too long ======
             if content2 and use_mr and isinstance(payload, dict) and isinstance(prompt_tpl, str) and isinstance(prompt_system, str):
                 prompt_tokens = _count_tokens_api(content2, api_model)
                 overflow = prompt_tokens > max_len
@@ -1793,7 +1800,7 @@ def process_and_store(filename, data_list, client):
 
                     final_obj = _reduce_union_prefer_majority(chunk_objs)
 
-            # ======  旧逻辑分支：没触发 MR 就走原来单次调用 ======
+            # ====== Legacy branch: use the original single call when MR is not triggered ======
             if content2 and final_obj is None:
                 if api_model.startswith("gemini"):
                     completion = llm_utils.call_google_gemini(api_model, client, role1, content1, role2, content2)
@@ -1823,7 +1830,7 @@ def process_and_store(filename, data_list, client):
             )
             print(log_con)
 
-            #  completion 只有在“旧逻辑单次调用”时才有
+            #  completion exists only in the legacy single-call branch
             if completion is not None and hasattr(completion, "usage"):
                 try:
                     print("********Input token count: " + str(completion.usage.prompt_tokens))
@@ -1840,7 +1847,7 @@ def process_and_store(filename, data_list, client):
             output_file_name = output_file + "output_results.json"
             output_completed_file_name = output_completed_file + "completed_results.json"
 
-            #  final_obj 统一出口：MR 或 单次
+            #  final_obj is the unified output for MR or single-call paths
             json_object = final_obj if isinstance(final_obj, dict) else {
                 "aligned_with_human_values": [],
                 "contradictory_to_human_values": []
@@ -1853,7 +1860,7 @@ def process_and_store(filename, data_list, client):
 
             file_utils.append_json_data_to_file(output_file_name, json_object, 4)
 
-            #  维持你原来的 completed_results.json 逻辑
+            #  Preserve the original completed_results.json behavior
             completed_instance = (
                 "{\"guid\": \"" + str(local_guid).replace("\n", "\\n") + "\""
                 + ", \"unit_level\": \"" + str(unit_level).replace("\n", "\\n") + "\""
@@ -1873,24 +1880,24 @@ def process_and_store(filename, data_list, client):
 def thread_processing(prompt_cons_file, min_thread_count, client):
     tasks = list(prompt_cons_file.items())
     max_workers = min(min_thread_count, cpu_count())
-    print(f"CPU 核心数: {cpu_count()}, 使用线程数: {max_workers}")
+    print(f"CPU cores: {cpu_count()}, threads: {max_workers}")
 
-    # 使用多线程执行任务
+    # Run tasks with multiple threads
     results = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 提交任务
+        # Submit tasks
         future_to_task = {
             executor.submit(process_and_store, filename, data_list, client): (filename, data_list, client)
             for filename, data_list in tasks
         }
 
-        # 等待任务完成并收集结果
+        # Wait for tasks to finish and collect results
         for future in as_completed(future_to_task):
             try:
                 res = future.result()
                 results.append(res)
             except Exception as e:
-                print("执行任务时出错:", e)
+                print("Error while executing task:", e)
 
 def split_test_data(
     gold: Dict[InstanceId, Dict[str, Set[str]]],
@@ -1981,8 +1988,8 @@ def _as_str(x: Any) -> str:
 
 def normalize_label_list(x: Any) -> List[str]:
     """
-    输入可能是 list / None / 其它，统一为 label-id 字符串 list。
-    去空、去重（先不排序，后续用 set 处理）。
+    Input may be list, None, or another type; normalize it to a list of label-id strings.
+    Remove empty values and duplicates; sorting is deferred because sets are used later.
     """
     if x is None:
         return []
@@ -1993,15 +2000,15 @@ def normalize_label_list(x: Any) -> List[str]:
             if s != "":
                 out.append(s)
         return out
-    # 有些异常输出可能是单个字符串/数字
+    # Some abnormal outputs may be a single string or number
     s = _as_str(x).strip()
     return [s] if s else []
 
 def normalize_pred_labels(obj: Dict[str, Any]) -> Tuple[Set[str], Set[str]]:
     """
-    兼容你的输出字段：
+    Support these output fields:
       aligned_with_human_values / contradictory_to_human_values
-    并保证 aligned / contradictory 不重叠（默认：冲突时保留 aligned，丢弃 contradictory）。
+    Ensure aligned and contradictory do not overlap; by default keep aligned and drop contradictory on conflicts.
     """
     a_list = normalize_label_list(obj.get("aligned_with_human_values"))
     c_list = normalize_label_list(obj.get("contradictory_to_human_values"))
@@ -2011,7 +2018,7 @@ def normalize_pred_labels(obj: Dict[str, Any]) -> Tuple[Set[str], Set[str]]:
 
     overlap = a_set & c_set
     if overlap:
-        # 冲突处理策略：保留 aligned，移除 contradictory 里的重复项
+        # Conflict policy: keep aligned and remove duplicates from contradictory
         c_set -= overlap
     return a_set, c_set
 
@@ -2023,19 +2030,19 @@ def build_pred_from_records(records: List[Dict[str, Any]]) -> Dict[InstanceId, D
     for r in records:
         guid = _as_str(r.get("guid")).strip()
         unit_level = _as_str(r.get("unit_level")).strip()
-        unit_id = _as_str(r.get("unit_id")).strip()  # article 可能是 ""
+        unit_id = _as_str(r.get("unit_id")).strip()  # article may be ""
         actor = _as_str(r.get("actor")).strip()
 
         if not guid or not unit_level or not actor:
-            # 不够构成 key 的，直接跳过（也可以改成 raise）
+            # Skip records that cannot form a key; this can be changed to raise
             continue
 
         iid: InstanceId = (guid, unit_level, unit_id, actor)
 
-        # 兼容：你的 records 本身就是 {aligned_with_human_values:[], contradictory_to...:[]}
+        # Compatibility: records may already contain {aligned_with_human_values:[], contradictory_to...:[]}
         a_set, c_set = normalize_pred_labels(r)
 
-        # 如果同一个 iid 在多个文件出现（理论上不该），这里做 union 合并
+        # If the same iid appears in multiple files, merge with union; this should not happen in theory
         if iid in pred:
             dup_counter["dup_iid"] += 1
             before_overlap = (pred[iid]["aligned"] & pred[iid]["contradictory"])
@@ -2043,14 +2050,14 @@ def build_pred_from_records(records: List[Dict[str, Any]]) -> Dict[InstanceId, D
             pred[iid]["contradictory"] |= c_set
             after_overlap = (pred[iid]["aligned"] & pred[iid]["contradictory"])
             if after_overlap:
-                # 再做一次冲突清理：保留 aligned
+                # Run conflict cleanup again: keep aligned
                 pred[iid]["contradictory"] -= after_overlap
                 conflict_counter["overlap_fixed_after_union"] += 1
         else:
             pred[iid] = {"aligned": set(a_set), "contradictory": set(c_set)}
 
-        # 单条里也可能 overlap（normalize 已经移除了 contradictory）
-        # 这里仅做统计
+        # A single record may also overlap; normalize has already removed contradictory duplicates
+        # Only collect statistics here
         if set(normalize_label_list(r.get("aligned_with_human_values"))) & set(normalize_label_list(r.get("contradictory_to_human_values"))):
             conflict_counter["overlap_in_single_record"] += 1
 
@@ -2066,7 +2073,7 @@ def pred_to_serializable(pred: Dict[InstanceId, Dict[str, Set[str]]]) -> List[Di
     for iid, d in pred.items():
         guid, unit_level, unit_id, actor = iid
 
-        # 排序：尽量按数字排序；如果不是纯数字就按字符串
+        # Sort numerically when possible; otherwise sort as strings
         def sort_key(x: str):
             return (0, int(x)) if x.isdigit() else (1, x)
 
@@ -2082,7 +2089,7 @@ def pred_to_serializable(pred: Dict[InstanceId, Dict[str, Set[str]]]) -> List[Di
 
 def count_empty_pred_instances(pred: Dict[InstanceId, Dict[str, Set[str]]]) -> int:
     """
-    统计 pred 里：aligned 和 contradictory 都为空 的 instance 个数
+    Count instances in pred where both aligned and contradictory are empty
     """
     empty = 0
     for iid, d in pred.items():
@@ -2100,7 +2107,7 @@ def _get_api_encoding(model_name: str):
     """
     if tiktoken is None:
         return None
-    # 经验：很多 OpenAI 兼容用 cl100k_base 近似就够做 chunk 控制
+    # Rule of thumb: cl100k_base is often sufficient for chunk control in OpenAI-compatible models
     try:
         return tiktoken.get_encoding("cl100k_base")
     except Exception:
@@ -2111,7 +2118,7 @@ def _count_tokens_api(text: str, model_name: str) -> int:
         return 0
     enc = _get_api_encoding(model_name)
     if enc is None:
-        # 粗略：英文约 4 chars/token；中日文更复杂，但用于“触发MR”足够
+        # Rough estimate: English is about 4 chars/token; Chinese/Japanese is more complex but sufficient for triggering MR
         return max(1, len(text) // 4)
     return len(enc.encode(text))
 
@@ -2120,7 +2127,7 @@ def _chunk_text_by_tokens_api(text: str, model_name: str, window: int, overlap: 
         return [""]
     enc = _get_api_encoding(model_name)
     if enc is None:
-        # fallback：按字符切（近似）
+        # fallback: split by characters approximately
         step = max(1, window - overlap)
         out = []
         s = 0
@@ -2146,13 +2153,13 @@ def _chunk_text_by_tokens_api(text: str, model_name: str, window: int, overlap: 
 
 def _chunk_evidence_sentences_by_tokens_api(evidence_sentences: list, model_name: str, window: int, overlap: int) -> list[list[dict]]:
     """
-    evidence_sentences: list[str] or list[dict] (你的 build_input_payload 里 evidence_sentences 目前是 list[str])
-    输出：list[chunks]，每个 chunk 是 list[dict|str]，保持原结构
+    evidence_sentences: list[str] or list[dict] (evidence_sentences is currently list[str] in build_input_payload)
+    Return list[chunks]; each chunk is list[dict|str] and preserves the original structure
     """
     if not isinstance(evidence_sentences, list) or not evidence_sentences:
         return [[]]
 
-    # 统一取文本
+    # Normalize text extraction
     def get_text(x):
         if isinstance(x, str):
             return x
@@ -2190,8 +2197,8 @@ def _chunk_evidence_sentences_by_tokens_api(evidence_sentences: list, model_name
 
 def _extract_json_from_completion_text(api_model: str, comp_content: str) -> dict:
     """
-    复用你现在的逻辑：优先取 ```json ...```，否则直接 json.loads。
-    出错返回空结构。
+    Reuse the current logic: prefer ```json ...```, otherwise call json.loads directly.
+    Return an empty structure on errors.
     """
     if not isinstance(comp_content, str):
         return {"aligned_with_human_values": [], "contradictory_to_human_values": []}
@@ -2215,7 +2222,7 @@ def _extract_json_from_completion_text(api_model: str, comp_content: str) -> dic
 
 def _reduce_union_prefer_majority(chunk_objs: list[dict]) -> dict:
     """
-    union + 去重 + 冲突消解 prefer_majority（平票：丢 contradictory）
+    union plus deduplication plus prefer_majority conflict resolution; drop contradictory on ties
     """
     a_cnt = Counter()
     c_cnt = Counter()
@@ -2244,7 +2251,7 @@ def _reduce_union_prefer_majority(chunk_objs: list[dict]) -> dict:
         elif c_cnt[k] > a_cnt[k]:
             a_all.discard(k)
         else:
-            # 平票：丢 contradictory，避免同标签双极性
+            # On ties, drop contradictory to avoid dual polarity for the same label
             c_all.discard(k)
 
     def _sort(xs):

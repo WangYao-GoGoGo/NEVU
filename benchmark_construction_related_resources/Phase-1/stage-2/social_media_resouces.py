@@ -1,3 +1,5 @@
+"""RSS feed catalog used as reference sources for supplementary article collection."""
+
 rss_feeds = {
     "BBC_Education": "https://feeds.bbci.co.uk/news/education/rss.xml",
     "BBC_Money": "https://feeds.bbci.co.uk/news/business/your_money/rss.xml",

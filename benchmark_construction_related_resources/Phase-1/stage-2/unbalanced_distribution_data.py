@@ -1,3 +1,5 @@
+"""Compute human-value label distributions across Phase-1 subfiles."""
+
 import os
 import json
 import sys
@@ -81,10 +83,10 @@ if __name__ == '__main__':
                     hv_guid[hv_categorie] = guid_values
                     hv_guids[file] = hv_guid
         datas_subfiles[file] = completed_articles
-    # 保存 datas_subfiles
+    # Save datas_subfiles
     # file_utils.dump_json_file(os.path.join(output_root_path, "datas_subfiles.json"), datas_subfiles)
-    # 保存 hv_count
+    # Save hv_count
     file_utils.dump_json_file(os.path.join(output_root_path, "hv_count.json"), hv_count, 4)
-    # 保存 hv_guids
+    # Save hv_guids
     file_utils.dump_json_file(os.path.join(output_root_path, "hv_guids.json"), hv_guids, 4)
     print("finished")

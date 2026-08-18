@@ -1,3 +1,5 @@
+"""File and JSON helpers used across construction and experiment scripts."""
+
 import os
 import json
 import sys

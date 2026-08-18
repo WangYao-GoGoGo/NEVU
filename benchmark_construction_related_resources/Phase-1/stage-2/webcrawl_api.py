@@ -1,3 +1,5 @@
+"""Reference web-crawling utilities for collecting supplementary news articles."""
+
 import os
 import json
 import sys
@@ -157,9 +159,9 @@ def get_articles_from_html(base_url, css_selector, limit):
 
     print(f"Opening: {base_url}")
     driver.get(base_url)
-    time.sleep(5)  # 等待内容加载
+    time.sleep(5)  # Wait for content to load
 
-    # 滚动页面，触发懒加载
+    # Scroll the page to trigger lazy loading
     scroll_pause = 2
     last_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -232,7 +234,7 @@ def split_data(total_results, max_limit):
             subfiles[curr_page_num] = current_page
             current_page = []
 
-    # 加入最后不足 max_limit 的一页
+    # Add the final page with fewer than max_limit records
     if current_page:
         curr_page_num = len(subfiles)
         subfiles[curr_page_num] = current_page
@@ -254,14 +256,14 @@ def statistic_and_dump_splited_files(output_file_path_4, output_file_path_5, out
     # total_results = filter_duplicated(tmp_results, results_6)
     total_results = filter_duplicated(results_6, results_6)
     subfiles = split_data(total_results, max_rows_per_file)
-    # 此处设置12是因为我之前已经做了12个文件了，最后一个文件名是 11，所以第二批数据我需要从第12个文件开始做起。
+    # Set this to 12 because 12 files had already been created; the last file was 11, so the second batch starts at file 12.
     dump_subfiles(dump_subfile_path, dump_subfile_name, subfiles, 12)
     print(results)
 
 def data_crawling(output_dir):
     file_utils.check_and_create_file(output_dir)
     #
-    # # Step 1: 从 RSS 提取
+    # # Step 1: Extract from RSS
     for name, rss_url in rss_feeds.items():
         print(f"Fetching from RSS: {name}")
         feed = get_articles_from_rss(rss_url)
@@ -269,7 +271,7 @@ def data_crawling(output_dir):
         # save_json_data_list(os.path.join(output_dir, f"{name}.json"), articles)
         file_utils.save_json_data_list(os.path.join(output_dir, f"{name}.json"), articles, 2)
 
-    # Step 2: 从 HTML 补充提取（多页）
+    # Step 2: Supplement from HTML across multiple pages
     for name, conf in html_sources.items():
         print(f"Fetching from HTML: {name}")
         # urls = get_articles_from_html(conf["base_url"], conf["selector"], limit=1500)
@@ -295,7 +297,7 @@ def data_crawling(output_dir):
                     "images": list(article.images) if article.images else [],
                     "content": article.text
                 })
-                time.sleep(1)  # 避免访问过快
+                time.sleep(1)  # Avoid overly frequent requests
             file_utils.save_json_data_list(os.path.join(output_dir, f"{name}.json"), all_results, 2)
 
     # for domain, rss_url in rss_feeds.items():
@@ -320,7 +322,7 @@ def data_crawling(output_dir):
     #             "url": url,
     #             "content": article.text
     #         })
-    #     time.sleep(1)  # 避免访问过快
+    #     time.sleep(1)  # Avoid overly frequent requests
     #     file_utils.save_json_data_list(output_file, all_results, 2)
 
 if __name__ == '__main__':
@@ -367,7 +369,7 @@ if __name__ == '__main__':
     #     print("finished!")
 
     # value_counts = Counter(rss_feeds.values())
-    # # # 只保留那些 value 只出现一次的项
+    # # # Keep only entries whose value appears once
     # filtered_rss_feeds = {k: v for k, v in rss_feeds.items() if value_counts[v] == 1}
 
     html_sources = sm.html_sources
@@ -379,8 +381,7 @@ if __name__ == '__main__':
     # data_crawling(output_dir_6)
 
 
-    # 去重以及将爬取到的数据分批放入子文件中进行 phase1的处理
+    # Deduplicate and batch crawled data into subfiles for Phase-1 processing
 
     statistic_and_dump_splited_files(output_file_path_4, output_file_path_5, output_file_path_6)
-
 

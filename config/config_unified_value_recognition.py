@@ -1,3 +1,5 @@
+"""Configuration loader for unified value-recognition experiments."""
+
 import json
 import sys
 import os

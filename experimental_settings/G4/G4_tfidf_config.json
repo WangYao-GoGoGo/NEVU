@@ -1,12 +1,12 @@
 DEBUG = True
     if DEBUG:
-        DEBUG_G4_METHOD = "sbert"  # "tfidf" or "sbert"
+        DEBUG_G4_METHOD = "tfidf"  # "tfidf" or "sbert"
 
         COMMON_ARGS = [
             "--mode", "infer",
             "--group", "G4",
 
-            # G4 不用真正的 LLM model_name，但为了输出目录清楚，给一个名字
+            # G4 does not use a real LLM model_name; set one for clearer output directories
             "--model_name", f"g4-{DEBUG_G4_METHOD}-retrieval",
 
             "--label_space", "L1",
@@ -33,7 +33,7 @@ DEBUG = True
             "--test_hv",
             "dataset/test_sub_gold.json",
 
-            # G4 不用 prompt，但保留路径也没问题
+            # G4 does not use prompts, but keeping these paths is harmless
             "--canonical_prompt", "prompt/canonical_prompt.txt",
             "--canonical_system", "prompt/canonical_system.txt",
 
@@ -47,10 +47,10 @@ DEBUG = True
             "--sample_test_n", "99999999",
             "--sample_seed", "42",
 
-            # 固定输出目录，避免时间戳覆盖你手写 pred_out/report_out
+            # Use a fixed output directory so timestamps do not override explicit pred_out/report_out
             "--use_timestamp", "0",
 
-            # G4 统一输出根目录
+            # G4 shared output root
             "--out_dir",
             f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval",
 
@@ -64,7 +64,7 @@ DEBUG = True
             "--report_out_dev",
             f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval/dev_report.json",
 
-            # G4 参数
+            # G4 parameters
             "--retrieval_method", DEBUG_G4_METHOD,
             "--retrieval_k", "5",
             "--retrieval_vote_threshold", "0.3",
@@ -72,14 +72,14 @@ DEBUG = True
             "--retrieval_level_filter", "true",
             "--retrieval_conflict_mode", "prefer_higher",
 
-            # 不限制输出标签数量。后面如果 precision 太低，可以再加 top_m
+            # Do not cap the number of output labels. Add top_m later if precision is too low
             "--retrieval_top_m_aligned", "0",
             "--retrieval_top_m_contra", "0",
 
-            # 每个字段最多保留字符数
+            # Maximum characters retained per field
             "--retrieval_max_chars_per_field", "6000",
 
-            # article-level 默认不直接加入全文，避免 article 太长导致检索噪声
+            # By default, article-level retrieval does not include full article content to reduce noise from long articles
             "--retrieval_include_article_content", "false",
         ]
 

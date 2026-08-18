@@ -1,3 +1,5 @@
+"""Build balanced Phase-1 subfiles by distributing article GUIDs across genres."""
+
 import os
 import sys
 import json
@@ -49,72 +51,72 @@ def buil_genre_data(file_list, config, event_genres):
     return genre_data
 
 def split_genre_data(genre_data, event_genres):
-    # 3. 先统计总数，看看是不是约为 69001
+    # 3. Count the total first and check whether it is about 69001
     total_data_count = sum(len(genre_data.get(t, [])) for t in event_genres)
-    print("总数据量:", total_data_count)
+    print("Total data count:", total_data_count)
 
-    # 4. 计算需要多少文件（如果你确认是 691 个，可直接写死）
+    # 4. Calculate how many files are needed; hard-code if the count is confirmed
     max_per_file = 100
     num_files = (total_data_count // max_per_file) + (1 if total_data_count % max_per_file != 0 else 0)
-    # 若你确定要 691 个文件，也可以直接：
+    # If the target is confirmed as 691 files, it can also be set directly:
     # num_files = 691
 
-    current_file_index = 0  # 用来命名文件时做区分
-    used_count = 0  # 已分配的数据条数
+    current_file_index = 0  # Used to distinguish output file names
+    used_count = 0  # Number of assigned records
 
     sub_files = {}
 
-    # 5. 开始逐文件写入
+    # 5. Start writing files one by one
     while used_count < total_data_count:
-        file_data = []  # 当前文件的所有条目
+        file_data = []  # All records for the current file
 
-        # 不断做“轮询各类型”的操作，直到凑满 100 条或取不出了
+        # Keep round-robin sampling across types until 100 records are collected or no records remain
         while len(file_data) < max_per_file:
-            # 做一轮：尝试给每个类型都取一条
+            # One round: try to take one record from each type
             round_data = []
             for t in event_genres:
-                # 若该类型还有剩余数据，就取出1条
+                # If this type still has records, take one
                 if len(genre_data.get(t, [])) > 0:
-                    guid = genre_data[t].pop(0)  # 取出第一个guid
+                    guid = genre_data[t].pop(0)  # Take the first guid
                     round_data.append({"type": t, "guid": guid})
 
-            # 如果这一轮什么也没取到，说明所有类型都空了 => 全部取完
+            # If this round takes nothing, all types are empty and sampling is complete
             if not round_data:
                 break
 
-            # 检查本轮能否全部放进当前文件
+            # Check whether this round fits in the current file
             space_left = max_per_file - len(file_data)
             if len(round_data) <= space_left:
-                # 全部放得下
+                # Everything fits
                 file_data.extend(round_data)
             else:
-                # 只能放一部分，凑满到100
+                # Only part of the round fits; fill up to 100
                 file_data.extend(round_data[:space_left])
-                # 剩余的条目还需要“放回原类型”里去，以便下一个文件继续用
+                # Put remaining records back into their original type for the next file
                 leftovers = round_data[space_left:]
                 for item in reversed(leftovers):
-                    # 放回到对应类型的头部，保证下次取的时候顺序不乱
+                    # Put them back at the head of the corresponding type to preserve order
                     genre_data[item["type"]].insert(0, item["guid"])
-                # 当前文件已经满了，就退出
+                # Current file is full, so exit
                 break
 
-        # 如果当前文件什么都没取到，说明数据已用尽，结束
+        # If the current file received nothing, all data is exhausted
         if not file_data:
             break
 
         used_count += len(file_data)
 
         sub_files[current_file_index] = file_data
-        # 6. 写入当前文件 (json 格式示例)
+        # 6. Write the current file as JSON
         # filename = f"part_{current_file_index}.json"
         # with open(filename, 'w', encoding='utf-8') as f:
         #     json.dump(file_data, f, ensure_ascii=False, indent=2)
         #
-        # print(f"输出文件: {filename}, 条目数: {len(file_data)}")
+        # print(f"Output file: {filename}, record count: {len(file_data)}")
 
         current_file_index += 1
     return sub_files
-    # print("全部文件分割完成，共分配数据条数:", used_count)
+    # print("All files split; total assigned records:", used_count)
 
 def dump_subfiles(subfiles_map, initial_datas, initial_index, config):
     file_datas = {}

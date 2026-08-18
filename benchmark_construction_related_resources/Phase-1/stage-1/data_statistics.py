@@ -1,3 +1,5 @@
+"""Compute event-genre statistics for initial Phase-1 article files."""
+
 import os
 import sys
 

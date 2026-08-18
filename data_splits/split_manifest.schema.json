@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ECHV split manifest",
+  "type": "object",
+  "required": [
+    "dataset",
+    "version",
+    "generated_at",
+    "splits"
+  ],
+  "properties": {
+    "dataset": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp or release date."
+    },
+    "blind_period_status": {
+      "type": "string",
+      "enum": [
+        "not_applicable",
+        "active",
+        "ended"
+      ]
+    },
+    "splits": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "guid_file",
+          "guid_count",
+          "label_visibility"
+        ],
+        "properties": {
+          "guid_file": {
+            "type": "string"
+          },
+          "guid_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "label_visibility": {
+            "type": "string",
+            "enum": [
+              "released",
+              "withheld_until_blind_period_ends",
+              "not_released_due_to_license"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

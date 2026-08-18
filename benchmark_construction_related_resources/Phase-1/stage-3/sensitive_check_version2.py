@@ -1,3 +1,5 @@
+"""Multithreaded sensitive-content checking script for Phase-1 filtering."""
+
 from openai import OpenAI
 import os
 import json
@@ -123,28 +125,28 @@ def thread_processing(prompt_cons_file, min_thread_count):
 
     tasks = list(prompt_cons_file.items())
     max_workers = min(min_thread_count, cpu_count())
-    print(f"CPU 核心数: {cpu_count()}, 使用线程数: {max_workers}")
+    print(f"CPU cores: {cpu_count()}, threads: {max_workers}")
 
-    # 使用多线程执行任务
+    # Run tasks with multiple threads
     results = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 提交任务
+        # Submit tasks
         future_to_task = {
             executor.submit(process_and_store, filename, data_list): (filename, data_list)
             for filename, data_list in tasks
         }
 
-        # 等待任务完成并收集结果
+        # Wait for tasks to finish and collect results
         for future in as_completed(future_to_task):
             try:
                 res = future.result()
                 results.append(res)
             except Exception as e:
-                print("执行任务时出错:", e)
+                print("Error while executing task:", e)
 
-    # # 打印或处理返回结果
+    # # Print or process returned results
     # for res in results:
-    #     print("处理完成 ->", res)
+    #     print("Completed ->", res)
     #
     # with Pool(processes=min(min_thread_count, cpu_count())) as pool:
     #     print(cpu_count())

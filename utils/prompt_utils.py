@@ -1,3 +1,5 @@
+"""Prompt assembly helpers for human-value recognition experiments."""
+
 import os
 import json
 import sys
@@ -27,11 +29,11 @@ def get_hv1_mappings(hv_file_path):
 def get_hv_description(hv_file_path):
     with open(hv_file_path, 'r') as file:
         data = json.load(file)
-    # 利用循环和拷贝生成新的字典
+    # Generate new dictionaries using iteration and copies
     result = {}
     for entry in data["values"]:
         key = entry["level-1"]
-        # 复制一份字典，删除name键
+        # Copy the dictionary and remove the name key
         entry_copy = entry.copy()
         del entry_copy["level-1"]
         result[key] = entry_copy
@@ -40,11 +42,11 @@ def get_hv_description(hv_file_path):
 def get_hv_description_dict(hv_file_path):
     with open(hv_file_path, 'r') as file:
         data = json.load(file)
-    # 利用循环和拷贝生成新的字典
+    # Generate new dictionaries using iteration and copies
     result = {}
     for entry in data["values"]:
         key = entry["level-1"]
-        # 复制一份字典，删除name键
+        # Copy the dictionary and remove the name key
         entry_copy = entry.copy()
         del entry_copy["level-1"]
         result[key] = entry_copy

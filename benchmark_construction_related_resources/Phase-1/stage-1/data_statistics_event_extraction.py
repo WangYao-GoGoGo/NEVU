@@ -1,3 +1,5 @@
+"""Prepare per-file statistics and processing ranges for event extraction."""
+
 import os
 import sys
 

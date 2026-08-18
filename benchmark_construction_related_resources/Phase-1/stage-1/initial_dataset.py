@@ -1,3 +1,5 @@
+"""Legacy helper for inspecting initial dataset records from local pickle files."""
+
 import argparse
 import random
 import numpy as np

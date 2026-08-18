@@ -1,3 +1,5 @@
+"""Supplementary RSS feed catalog for targeted human-value coverage."""
+
 # rss_feeds = {
 # BBC Worklife — https://www.bbc.com/worklife
 # BBC Education — https://www.bbc.com/news/education
@@ -14,55 +16,55 @@
 # NerdWallet Finance — https://www.nerdwallet.com/blog/finance/
 # The Simple Dollar — https://www.thesimpledollar.com/
 #
-# # 财务责任 & 无债
+# Financial responsibility and debt avoidance
 # Forbes Money – Debt & Credit      https://www.forbes.com/money/debt/
 # CNBC Personal Finance             https://www.cnbc.com/personal-finance/
 # The Simple Dollar Debt           https://www.thesimpledollar.com/category/debt/
 #
-# # 尊重长者 & 谦逊礼貌
+# Respect for elders and polite humility
 # AARP Family & Caregiving         https://www.aarp.org/caregiving/
 # BBC Religion & Ethics           https://www.bbc.co.uk/ethics
 # Psychology Today – Family       https://www.psychologytoday.com/us/basics/family-dynamics
 # The Guardian Society           https://www.theguardian.com/society
 #
-# # 整洁接纳 & 舒适生活
+# Cleanliness, acceptance, and comfortable living
 # Apartment Therapy Cleaning      https://www.apartmenttherapy.com/cleaning
 # Marie Kondo Blog               https://konmari.com/blog/
 # The Kitchn Organizing          https://www.thekitchn.com/cleaning-organizing
 # MindBodyGreen Mindfulness      https://www.mindbodygreen.com/mindfulness
 #
-# # 权威影响
+# Authority and influence
 # Harvard Business Review Management https://hbr.org/topics/management
 # Inc Leadership                 https://www.inc.com/leadership
 # Fast Company Leadership Now    https://www.fastcompany.com/section/leadership-now
 #
-# # 其他（可用于补充多样性）
+# Other terms for diversity
 # Psychology Today Self-Improvement https://www.psychologytoday.com/us/topics/self-improvement
 #
 #
 # }
 
 rss_feeds = {
-    # 财务
+    # Finance
     # "Forbes_Money_Debt": "https://www.forbes.com/money/debt/rss/",
     # "CNBC_Personal_Finance": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
     # "NerdWallet": "https://www.nerdwallet.com/blog/finance/feed/",
     # "TheSimpleDollar": "https://www.thesimpledollar.com/feed/",
-    # # 尊重、礼貌
+    # Respect and politeness
     # "AARP_Family_Caregiving": "https://feeds.aarp.org/aarp/relationships-and-family",
     # "BBC_Religion_Ethics": "https://feeds.bbci.co.uk/news/uk_politics/rss.xml",
     # "Guardian_Society": "https://www.theguardian.com/society/rss",
     # "PsychologyToday_Family": "https://www.psychologytoday.com/us/basics/family-dynamics/rss",
-    # # 整洁与生活
+    # Cleanliness and lifestyle
     # "MarieKondo_Blog": "https://konmari.com/feed/",
     # "TheKitchn_Cleaning": "https://www.thekitchn.com/feed",
     # "MindBodyGreen_Mindfulness": "https://www.mindbodygreen.com/feed.xml",
-    # # 权威
+    # Authority
     # "HBR_Management": "https://hbr.org/rss",
     # "Inc_Leadership": "https://www.inc.com/leadership/rss",
     # "FastCompany_Leadership": "https://www.fastcompany.com/section/leadership-now/rss",
     # "Forbes_Leadership": "https://www.forbes.com/leadership/feed/",
-    # # 个人成长
+    # Personal growth
     # "PsychologyToday_SelfImprovement": "https://www.psychologytoday.com/us/topics/self-improvement/rss",
     # "BBC_Worklife": "https://feeds.bbci.co.uk/news/business/worklife/rss.xml",
     # "VOA_Personal_Stories": "https://learningenglish.voanews.com/api/zmgkqreimr",

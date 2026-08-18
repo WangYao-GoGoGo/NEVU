@@ -146,7 +146,7 @@
                 })
                 .then(data => {
                     if (!data) {
-                        document.querySelector(".content").innerHTML = "<p>未找到事件数据</p>";
+                        document.querySelector(".content").innerHTML = "<p>No event data found</p>";
                         return;
                     }
 
@@ -160,11 +160,11 @@
                     document.getElementById("arg-mention-table").querySelector("tbody").innerHTML = parseArguments(data.argumentMentions);
                     document.getElementById("human-values-table").querySelector("tbody").innerHTML = parseHumanValues(data.HumanValueLabels);
                 })
-                .catch(error => console.error("❌ 获取子事件详情失败:", error));
+                .catch(error => console.error("Failed to fetch subevent details:", error));
         }
 
         function parseHumanValues(humanValuesString) {
-            if (!humanValuesString) return "<tr><td colspan='3'>暂无数据</td></tr>";
+            if (!humanValuesString) return "<tr><td colspan='3'>No data available</td></tr>";
 
             let rows = [];
             let valuesArray = humanValuesString.split("|");
@@ -180,7 +180,7 @@
         }
 
         function parseArguments(argumentsString) {
-            if (!argumentsString) return "<tr><td colspan='2'>暂无数据</td></tr>";
+            if (!argumentsString) return "<tr><td colspan='2'>No data available</td></tr>";
 
             let rows = [];
             let argumentsArray = argumentsString.split("|");

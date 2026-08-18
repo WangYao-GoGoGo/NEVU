@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""Inference utilities for the Controlled Grouping Test.
+
+The CGT path shares most generation and parsing logic with the main inference
+module, but constructs controlled grouping payloads for heuristic-baseline
+comparisons.
+"""
+
 from __future__ import annotations
 
 import os
@@ -79,7 +86,7 @@ def build_chat_str(tokenizer, system_prompt: str, user_prompt: str, model_name: 
         tokenizer, messages,
         tokenize=False,
         add_generation_prompt=True,
-        enable_thinking=False,   #  Qwen3 会关 thinking；Llama 会自动忽略该参数
+        enable_thinking=False,   #  Qwen3 disables thinking; Llama ignores this argument automatically
         model_name=model_name
     )
 
@@ -88,7 +95,7 @@ def tokenize_chat_str(
     chat_str: str,
     max_input_tokens: int,
 ) -> List[int]:
-    # 只返回 input_ids，长度就是 prompt_len
+    # Return only input_ids; its length is prompt_len
     enc = tokenizer(
         chat_str,
         add_special_tokens=False,
@@ -144,7 +151,7 @@ def local_generate_json_batch_from_ids(
     pad_prompt_len = input_ids.shape[1]  # = max_len
     outs = []
     for i in range(gen.shape[0]):
-        out_ids = gen[i, pad_prompt_len:]  #  正确：去掉 pad+prompt
+        out_ids = gen[i, pad_prompt_len:]  #  Correct: remove pad plus prompt
         txt = tokenizer.decode(out_ids, skip_special_tokens=True).strip()
         outs.append(txt)
     return outs
@@ -206,7 +213,7 @@ def reduce_adaptive(chunk_objs, drop_conflicts=True):
     if n == 0:
         return {"aligned_with_human_values": [], "contradictory_to_human_values": []}
 
-    # 关键：chunk少时不要设太高阈值，否则你说的“不同内容加总”会被破坏
+    # Important: use a lower threshold for few chunks so different content can still accumulate
     if n <= 2:
         min_votes = 1
     else:
@@ -297,14 +304,14 @@ def reduce_union_dedup_with_chunk_cap(
         elif conflict_mode == "prefer_aligned":
             c_all -= conflicts
         else:
-            # prefer_majority：只用于冲突消解，不做“投票过滤”
+            # prefer_majority: used only for conflict resolution, not vote filtering
             for k in list(conflicts):
                 if a_cnt[k] > c_cnt[k]:
                     c_all.discard(k)
                 elif c_cnt[k] > a_cnt[k]:
                     a_all.discard(k)
                 else:
-                    # 平票丢掉contradictory，避免同时出现
+                    # On ties, drop contradictory to avoid duplicate polarities
                     # a_all.discard(k)
                     c_all.discard(k)
 
@@ -336,7 +343,7 @@ def str2bool(x: str) -> bool:
 def reduce_chunk_predictions(
     preds: List[Dict[str, Any]],
     *,
-    min_support: Optional[int] = None,   # None 表示自动：ceil(n_chunks * 0.3)
+    min_support: Optional[int] = None,   # None means automatic: ceil(n_chunks * 0.3)
     drop_conflicts: bool = True
 ) -> Dict[str, List[str]]:
     """
@@ -348,7 +355,7 @@ def reduce_chunk_predictions(
         return {"aligned_with_human_values": [], "contradictory_to_human_values": []}
 
     if min_support is None:
-        min_support = max(1, math.ceil(n * 0.3))  # 30%窗口支持即可
+        min_support = max(1, math.ceil(n * 0.3))  # 30 percent window support is sufficient
 
     a = Counter()
     c = Counter()
@@ -359,18 +366,18 @@ def reduce_chunk_predictions(
         for x in p.get("contradictory_to_human_values", []) or []:
             c[str(x)] += 1
 
-    # 先按阈值筛
+    # Filter by threshold first
     a_keep = {k for k, v in a.items() if v >= min_support}
     c_keep = {k for k, v in c.items() if v >= min_support}
 
-    # 冲突处理
+    # Conflict handling
     conflicts = a_keep & c_keep
     if conflicts:
         if drop_conflicts:
             a_keep -= conflicts
             c_keep -= conflicts
         else:
-            # 用多数票决定方向，平票则丢弃
+            # Use majority vote to decide direction; drop on ties
             for k in list(conflicts):
                 if a[k] > c[k]:
                     c_keep.discard(k)
@@ -380,7 +387,7 @@ def reduce_chunk_predictions(
                     a_keep.discard(k)
                     c_keep.discard(k)
 
-    # 输出排序（按出现次数降序，便于稳定）
+    # Sort output by descending count for stability
     aligned = sorted(a_keep, key=lambda k: (-a[k], k))
     contra  = sorted(c_keep, key=lambda k: (-c[k], k))
     return {"aligned_with_human_values": aligned, "contradictory_to_human_values": contra}
@@ -501,7 +508,7 @@ def local_generate_json(
     model_name: str,
     max_new_tokens: int = 256,
     temperature: float = 0.0,
-    max_input_tokens: Optional[int] = None,   # 新增
+    max_input_tokens: Optional[int] = None,   # New
 ) -> str:
     messages = [
         {"role": "system", "content": system_prompt},
@@ -516,7 +523,7 @@ def local_generate_json(
         model_name=model_name
     )
 
-    # 用 max_input_tokens 控制截断，而不是 tokenizer.model_max_length
+    # Use max_input_tokens for truncation instead of tokenizer.model_max_length
     if max_input_tokens is None:
         max_input_tokens = tokenizer.model_max_length
 
@@ -660,7 +667,7 @@ def run_inference(
                 e = events_by_guid.get(guid)
                 if not e:
                     continue
-                payload = data_utils.build_input_payload_pseudo(e, iid, label_space, hv_label, hv_label_desc)
+                payload = data_utils.build_input_payload_cgt(e, iid, label_space, hv_label, hv_label_desc)
                 actors = e["actors"]
                 actor_text = data_utils._get_actor_by_id(iid[3], actors)
 
@@ -692,11 +699,11 @@ def run_inference(
                     user_prompt_info["output_file_root_path"] = output_file_root_path
                     user_prompt_info["output_completed_file_root_path"] = output_completed_file_root_path
 
-                    #  下面这些用于“可选 MapReduce”
+                    #  The following fields are used for optional MapReduce
                     user_prompt_info["payload"] = payload
                     user_prompt_info["prompt_variant"] = prompt_variant
                     user_prompt_info[
-                        "prompt_content_template"] = prompt_content  # 含 <INPUT_VALUE> 的模板
+                        "prompt_content_template"] = prompt_content  # template containing <INPUT_VALUE>
                     user_prompt_info["prompt_system"] = prompt_system
                     user_prompt_info["use_map_reduce"] = bool(g1_use_map_reduce)
                     user_prompt_info["max_len"] = int(max_len)
@@ -733,7 +740,7 @@ def run_inference(
 
         gold_detail = gold[iid]
         random_subevent_ids = gold_detail["random_subevent_ids"]
-        payload = data_utils.build_input_payload_pseudo(e, iid, label_space, hv_label, hv_label_desc, random_subevent_ids)
+        payload = data_utils.build_input_payload_cgt(e, iid, label_space, hv_label, hv_label_desc, random_subevent_ids)
 
 
         payload["random_subevent_ids"] = random_subevent_ids
@@ -746,13 +753,13 @@ def run_inference(
         user_prompt = prompt_utils.build_prompt_text(payload, prompt_variant, prompt_content, prompt_system, model_name, group)
         chat_str = build_chat_str(local_tokenizer, prompt_system, user_prompt, model_name)
 
-        # 1) 先算未截断长度（不截断）
+        # 1) First compute the untruncated length
         full_ids = local_tokenizer(chat_str, add_special_tokens=False, truncation=False)["input_ids"]
         overflow = (len(full_ids) > max_len)
 
-        # 2) 推理时再做截断得到实际输入
+        # 2) Then truncate during inference to get the actual input
         input_ids = full_ids[-max_len:] if overflow else full_ids
-        p_len = len(full_ids)  # 这是“真实长度”，不是截断后长度
+        p_len = len(full_ids)  # This is the true length, not the truncated length
 
         unit_level = iid[1]
         cap_a, cap_c = LEVEL_CAP.get(unit_level, (12, 12))

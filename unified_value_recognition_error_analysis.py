@@ -1,37 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Unified runner for:
-- G1: API LLM inference (OpenAI / Claude / Gemini / DeepSeek)  -> no training
-- G2: Open-source instruct model inference (Llama/Qwen/Ministral) -> no training
-- G3: LoRA fine-tuning (Llama/Qwen) + inference + evaluation
+"""Error-analysis runner for event-centric human-value recognition.
 
-Data:
-- event_formatted.json: list[dict], keyed by guid, includes:
-    - phase_version, filename
-    - article fields (title/context etc.)
-    - subevents list with id/text
-    - behavior chains / story narratives (best-effort extraction)
-    - actors: list[{actor_name: "guid-i"}]
-- hv_rows_formatted.json: list[dict], each row is one hv label instance:
-    {
-      guid, filename, phase_version,
-      unit_level: "article|subevent|behavior_chain|story_narrative",
-      unit_id: "" or subevent_id or behavior_chain_id or story_narrative_id,
-      actor: "guid-i" (already mapped),
-      l1_human_value: int(0..53),
-      l2_human_value: int(0..19),
-      direction: 1(aligned) / 0(contradictory),
-      ...
-    }
-
-Training:
-- We train a single unified model across 4 levels by putting unit_level in the prompt.
-- We evaluate overall and per level.
-
-Metrics:
-- micro-F1 and macro-F1 (gold-supported macro) similar to your evaluator.  (see evaluator inspiration) :contentReference[oaicite:2]{index=2}
+This script reuses the main inference and evaluation pipeline while adding
+filters and output paths for targeted error analysis. It is intended for
+diagnosing model behavior on selected instances, levels, actors, or result
+subsets rather than for producing the primary benchmark table.
 """
 
 from __future__ import annotations
@@ -88,7 +63,7 @@ from typing import Iterable
 
 from peft import PeftModel
 
-# ===== ADD 1) 在 imports 里补充（文件顶部 import 区域） =====
+# ===== ADD 1) Added in the import section at the top of the file =====
 from typing import Optional
 
 try:
@@ -223,15 +198,15 @@ def dump_sampled_split_files(
     file_utils,
 ) -> Tuple[str, str]:
     """
-    根据 sampled_gold 的 iid 集合过滤 events_list 与 hv_rows_list，
-    并输出两份文件：{split_name}_event_base.json / {split_name}_labels.json
+    Filter events_list and hv_rows_list by the iid set in sampled_gold,
+    then write two files: {split_name}_event_base.json and {split_name}_labels.json
     """
     os.makedirs(out_dir, exist_ok=True)
 
     keep_iids = set(sampled_gold.keys())
     keep_guids = {iid[0] for iid in keep_iids}
 
-    # 1) events：按 guid 过滤
+    # 1) events: filter by guid
     sampled_events = []
     if isinstance(events_list, list):
         for e in events_list:
@@ -241,7 +216,7 @@ def dump_sampled_split_files(
             if g in keep_guids:
                 sampled_events.append(e)
 
-    # 2) hv_rows：按 (guid, unit_level, unit_id, actor) 精确过滤
+    # 2) hv_rows: exact filter by (guid, unit_level, unit_id, actor)
     sampled_hv = []
     if isinstance(hv_rows_list, list):
         for r in hv_rows_list:
@@ -251,7 +226,7 @@ def dump_sampled_split_files(
             if iid in keep_iids:
                 sampled_hv.append(r)
 
-    # 输出文件
+    # Output files
     event_path = os.path.join(out_dir, f"{split_name}_event_base.json")
     hv_path = os.path.join(out_dir, f"{split_name}_labels.json")
 
@@ -263,7 +238,7 @@ def dump_sampled_split_files(
     print(f"[INFO] -> {hv_path}")
     return event_path, hv_path
 
-# ===== ADD 2) 新增一个“统一加载模型”的函数（放在 main() 前即可） =====
+# ===== ADD 2) Add a unified model-loading function before main() =====
 def load_model_for_infer(
     group: str,
     model_name: str,
@@ -296,13 +271,13 @@ def load_model_for_infer(
         return any(os.path.exists(os.path.join(p, x)) for x in cand)
 
     def _load_tokenizer(src: str):
-        # 先走常规 HF tokenizer（Llama/Qwen/Phi 等走这条）
+        # Try the standard HF tokenizer first for Llama, Qwen, Phi, etc.
         try:
             return AutoTokenizer.from_pretrained(src, token=hf_token, use_fast=True)
         except Exception as e1:
             msg = str(e1)
 
-            #  关键：Ministral/部分 Mistral3 系列会遇到 TokenizersBackend
+            #  Important: Ministral and some Mistral3 variants may hit TokenizersBackend issues
             if "TokenizersBackend" in msg:
                 try:
                     from transformers import MistralCommonBackend
@@ -315,7 +290,7 @@ def load_model_for_infer(
                         f"MistralCommonBackend error: {e_mcb}"
                     )
 
-            # 其他错误：再尝试 slow / trust_remote_code
+            # For other errors, retry with the slow tokenizer or trust_remote_code
             try:
                 return AutoTokenizer.from_pretrained(src, token=hf_token, use_fast=False)
             except Exception:
@@ -328,26 +303,26 @@ def load_model_for_infer(
             device_map="auto" if use_auto_map else None,
         )
 
-        # 1) 优先按 CausalLM 加载（Llama/Qwen/Phi 等都走这里）
+        # 1) Prefer loading as CausalLM for Llama, Qwen, Phi, etc.
         try:
             return AutoModelForCausalLM.from_pretrained(src, **common_kwargs)
         except Exception as e_causal:
             last_err = e_causal
 
-        # 2) Ministral-3 / Mistral3：Transformers 里常见是 Mistral3ForConditionalGeneration
+        # 2) Ministral-3/Mistral3 commonly uses Mistral3ForConditionalGeneration in Transformers
         try:
             from transformers import Mistral3ForConditionalGeneration
             return Mistral3ForConditionalGeneration.from_pretrained(src, **common_kwargs)
         except Exception as e_m3:
             last_err = e_m3
 
-        # 3) 最后兜底：trust_remote_code（少数 repo 需要）
+        # 3) Final fallback: trust_remote_code for a small number of repos
         try:
             return AutoModelForCausalLM.from_pretrained(src, trust_remote_code=True, **common_kwargs)
         except Exception as e_trc:
             last_err = e_trc
 
-        # 4) 再兜底一次 Mistral3 + trust_remote_code（极少数情况）
+        # 4) Last fallback: Mistral3 with trust_remote_code for rare cases
         try:
             from transformers import Mistral3ForConditionalGeneration
             return Mistral3ForConditionalGeneration.from_pretrained(
@@ -359,15 +334,15 @@ def load_model_for_infer(
         raise RuntimeError(f"Failed to load model from {src}. last_err={last_err}")
 
     # -----------------
-    # tokenizer source：避免 G2 被 adapter_dir 污染
+    # tokenizer source: avoid contaminating G2 with adapter_dir
     # -----------------
     tok_candidates = []
     if load_dir:
         tok_candidates.append(load_dir)
-    # 只有 G3 且 adapter_dir 真的含 tokenizer 文件时才允许用它
+    # Use adapter_dir only for G3 and only when it contains tokenizer files
     if g == "G3" and adapter_dir and _has_tokenizer_files(adapter_dir):
         tok_candidates.append(adapter_dir)
-    # 兜底永远是 base model
+    # Always fall back to the base model
     tok_candidates.append(model_name)
 
     tok = None
@@ -387,7 +362,7 @@ def load_model_for_infer(
         tok.pad_token = tok.eos_token
 
     # -----------------
-    # model loading (原逻辑不变)
+    # model loading; original behavior preserved
     # -----------------
     if load_dir:
         model = _load_model(load_dir)
@@ -411,7 +386,7 @@ def load_model_for_infer(
     model.eval()
     return model, tok
 
-# ===== ADD 3) 训练结束后可选保存 merged full model（放在 train_lora_sft 末尾 return 前） =====
+# ===== ADD 3) Optionally save a merged full model at the end of train_lora_sft before returning =====
 def maybe_save_merged_full_model(model, tok, save_merged_dir: str):
     """
     Save merged full model (base+LoRA) for easier inference later.
@@ -440,11 +415,11 @@ def load_model_and_tokenizer_for_infer(args, token=None, dtype=None, device="cud
     if args.device_map == "single":
         base.to(device)
 
-    if args.adapter_dir:  #  兼容 G3-LoRA
+    if args.adapter_dir:  #  Compatible with G3-LoRA
         model = PeftModel.from_pretrained(base, args.adapter_dir)
-        # 可选：合并后推理更快（合并后不再是LoRA形态）
+        # Optional: merging can make inference faster, but the model is no longer in LoRA-adapter form
         # model = model.merge_and_unload()
-    else:                 #  兼容 G2 / ECHV-LLAMA(full)
+    else:                 #  Compatible with G2 and full ECHV-LLAMA checkpoints
         model = base
 
     model.eval()
@@ -480,25 +455,25 @@ class SFTDataset(Dataset):
     def __getitem__(self, idx):
         ex = self.examples[idx]
 
-        # 1) 分开编码：保证 target 永远完整
+        # 1) Encode prompt and target separately so the target remains complete
         prompt_ids = self.tok(ex.prompt, add_special_tokens=False)["input_ids"]
         target_text = "\n" + ex.target_json
         target_ids = self.tok(target_text, add_special_tokens=False)["input_ids"]
 
-        # 2) 如果超过 max_len：只截断 prompt（从左边截断，优先保留“输入末尾/近邻上下文”）
+        # 2) If max_len is exceeded, truncate only the prompt from the left to preserve the input tail and nearby context
         if len(prompt_ids) + len(target_ids) > self.max_len:
             keep_prompt = max(0, self.max_len - len(target_ids))
-            prompt_ids = prompt_ids[-keep_prompt:]  # 保留 prompt 的末尾
-            # target_ids 保持完整
+            prompt_ids = prompt_ids[-keep_prompt:]  # Keep the tail of the prompt
+            # Keep target_ids complete
 
         if len(target_ids) > self.max_len:
-            target_ids = target_ids[:self.max_len]  # 或 raise ValueError
+            target_ids = target_ids[:self.max_len]  # or raise ValueError
             prompt_ids = []
 
         input_ids = prompt_ids + target_ids
         attention_mask = [1] * len(input_ids)
 
-        # 3) labels：prompt 部分 -100，target 部分监督
+        # 3) labels: mask the prompt with -100 and supervise only the target
         labels = [-100] * len(prompt_ids) + target_ids
 
         return {
@@ -538,7 +513,7 @@ def gold_to_target_json(g, label_dropout: float = 0.0) -> str:
             if len(xs) <= 1:
                 return xs
             kept = [x for x in xs if random.random() > label_dropout]
-            return kept if kept else xs[:1]  # 至少保留1个，避免学到全空
+            return kept if kept else xs[:1]  # Keep at least one label to avoid learning empty outputs only
         a = drop(a)
         c = drop(c)
 
@@ -588,7 +563,7 @@ def load_local_model_and_tokenizer(base_model_name: str):
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     if "Ministral" in base_model_name or "ministral" in base_model_name:
-        #  官方推荐：mistral-common tokenizer backend + transformers v5
+        #  Official recommendation: mistral-common tokenizer backend with Transformers v5
         from transformers import Mistral3ForConditionalGeneration, MistralCommonBackend
 
         tok = MistralCommonBackend.from_pretrained(base_model_name)
@@ -598,7 +573,7 @@ def load_local_model_and_tokenizer(base_model_name: str):
             device_map="auto" if torch.cuda.is_available() else None,
         )
     else:
-        # 其他模型沿用你的原逻辑
+        # Use the original logic for other models
         tok = AutoTokenizer.from_pretrained(base_model_name, use_fast=True)
         model = AutoModelForCausalLM.from_pretrained(
             base_model_name,
@@ -606,7 +581,7 @@ def load_local_model_and_tokenizer(base_model_name: str):
             device_map="auto" if torch.cuda.is_available() else None,
         )
 
-    # 统一 tokenizer padding 处理
+    # Standard tokenizer padding handling
     if getattr(tok, "pad_token_id", None) is None:
         tok.pad_token = tok.eos_token
     tok.truncation_side = "left"
@@ -649,14 +624,14 @@ def train_lora_sft(
     if tok.pad_token_id is None:
         tok.pad_token = tok.eos_token
 
-    #  创建主输出目录
+    #  Create the main output directory
     os.makedirs(output_dir, exist_ok=True)
 
-    #  Best checkpoint 目录
+    #  Best checkpoint directory
     best_dir = os.path.join(output_dir, "best")
     os.makedirs(best_dir, exist_ok=True)
 
-    #  Checkpoints 目录（只保存关键 epoch）
+    #  Checkpoints directory; only key epochs are saved
     checkpoints_dir = os.path.join(output_dir, "checkpoints")
     os.makedirs(checkpoints_dir, exist_ok=True)
 
@@ -670,11 +645,11 @@ def train_lora_sft(
             best_epoch = int(bm.get("best_epoch", -1))
             best_score = float(bm.get("best_score", -1e18))
 
-    #  记录所有 epoch 的分数（用于最后生成摘要）
+    #  Record all epoch scores for the final summary
     epoch_scores = {}
 
     def _pick_score(overall: Dict[str, Any]) -> float:
-        """从 overall 里取出评估分数"""
+        """Extract the evaluation score from overall"""
         if not isinstance(overall, dict):
             return float("nan")
 
@@ -687,7 +662,7 @@ def train_lora_sft(
             if isinstance(v, (int, float)):
                 return float(v)
 
-        # fallback：找第一个数值字段
+        # fallback：find the first numeric field
         for k, v in overall.items():
             if isinstance(v, (int, float)):
                 return float(v)
@@ -695,7 +670,7 @@ def train_lora_sft(
         return float("nan")
 
     def _save_checkpoint(epoch: int, model, tok, score: float, reason: str):
-        """保存 checkpoint 到 checkpoints/epoch_N/"""
+        """Save checkpoint under checkpoints/epoch_N/"""
         epoch_dir = os.path.join(checkpoints_dir, f"epoch_{epoch}")
         os.makedirs(epoch_dir, exist_ok=True)
         # Save LoRA adapter + tokenizer + trainer state (optimizer/scheduler/global_step/RNG)
@@ -711,7 +686,7 @@ def train_lora_sft(
             extra={"score": score, "reason": reason, "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")},
         )
 
-        # 保存该 epoch 的元信息
+        # Save metadata for this epoch
         meta = {
             "epoch": epoch,
             "score": score,
@@ -740,11 +715,11 @@ def train_lora_sft(
     from peft import PeftModel
 
     if args.resume_lora_dir:
-        #  从已保存的 LoRA adapter 恢复
+        #  Resume from a saved LoRA adapter
         model = PeftModel.from_pretrained(model, args.resume_lora_dir, is_trainable=True)
         print(f"[INFO] Resumed LoRA adapter from: {args.resume_lora_dir}")
     else:
-        #  新建 LoRA
+        #  Create a new LoRA adapter
         lora_cfg = LoraConfig(
             r=16, lora_alpha=32, lora_dropout=0.05,
             bias="none", task_type=TaskType.CAUSAL_LM,
@@ -845,7 +820,7 @@ def train_lora_sft(
             "dev": eval.build_eval_report_l1_and_l2_from_l1(dev_gold, dev_pred, args.l1tol2_mappings),
         }
 
-        #  更新主 dev report（保持向后兼容）
+        #  Update the main dev report for backward compatibility
         file_utils.save_json(args.report_out_dev, dev_report)
 
         score = get_nested(dev_report["dev"], ["level1", "overall", "micro_f1"], default=float("nan"))
@@ -853,21 +828,21 @@ def train_lora_sft(
 
         print(f"[INFO] Epoch {ep} score: {score:.4f}")
 
-        #  决定是否保存 checkpoint
+        #  Decide whether to save a checkpoint
         should_save = False
         save_reason = ""
 
-        # 1) 第一个 epoch：总是保存，且初始化为best（如果只有1个epoch）
+        # 1) First epoch: always save and initialize as best if there is only one epoch
         if ep == 1:
             should_save = True
             save_reason = "first epoch"
 
-            #  如果只有1个epoch，第一个就是best
+            #  If there is only one epoch, the first epoch is the best
             if epochs == 1 or (isinstance(score, float) and not math.isnan(score)):
                 if isinstance(score, float) and not math.isnan(score) and (best_epoch == -1 or score > best_score):
                     best_score = score
                     best_epoch = ep
-                    # 第一个epoch也保存到best目录
+                    # Also save the first epoch to the best directory
                     # Save BEST with trainer state as well (so it can be resumed)
                     save_checkpoint_lora(
                         ckpt_dir=best_dir,
@@ -889,14 +864,14 @@ def train_lora_sft(
                     file_utils.save_json(os.path.join(best_dir, "best_meta.json"), best_meta)
                     print(f"[INFO]  Initialized BEST with epoch 1 (score={best_score:.4f})")
 
-        # 2) 新的 best（epoch > 1）：保存到 checkpoints/ 和 best/
+        # 2) New best epoch after epoch 1: save to checkpoints/ and best/
         elif isinstance(score, float) and not math.isnan(score) and score > best_score:
             should_save = True
             save_reason = "new best"
             best_score = score
             best_epoch = ep
 
-            # 同时保存到 best 目录
+            # Also save to the best directory
             # Save BEST with trainer state as well (so it can be resumed)
             save_checkpoint_lora(
                 ckpt_dir=best_dir,
@@ -919,16 +894,16 @@ def train_lora_sft(
             file_utils.save_json(os.path.join(best_dir, "best_meta.json"), best_meta)
             print(f"[INFO]  NEW BEST! Saved to {best_dir} (epoch={best_epoch}, score={best_score:.4f})")
 
-        # 3) 最后一个 epoch（且不是第一个）：总是保存
+        # 3) Last epoch, when not the first, is always saved
         elif ep == epochs and ep > 1:
             should_save = True
             save_reason = "last epoch"
 
-        #  执行保存（如果需要）
+        #  Perform saving if needed
         if should_save:
             _save_checkpoint(ep, model, tok, score, save_reason)
 
-            # 同时保存该 epoch 的 dev report
+            # Also save the dev report for this epoch
             epoch_dir = os.path.join(checkpoints_dir, f"epoch_{ep}")
             epoch_report_path = os.path.join(epoch_dir, "dev_report.json")
             file_utils.save_json(epoch_report_path, dev_report)
@@ -937,7 +912,7 @@ def train_lora_sft(
 
         model.train()
 
-    #  保存训练摘要
+    #  Save training summary
     saved_epochs = []
     if 1 in epoch_scores:
         saved_epochs.append({"epoch": 1, "reason": "first", "score": epoch_scores[1]})
@@ -971,13 +946,13 @@ def train_lora_sft(
 
     return model, tok
 
-# 用法
+# Usage
 # train_events_by_guid = data_utils.index_events_by_guid(train_event)
 # dev_events_by_guid   = data_utils.index_events_by_guid(dev_event)
 # test_events_by_guid  = data_utils.index_events_by_guid(test_event)
 # report = check_guid_leakage(train_events_by_guid, dev_events_by_guid, test_events_by_guid)
 
-# 如果你想强制“必须无泄漏”，加断言：
+# Add an assertion here if strict no-leakage checking is required.
 # assert report["overlap_train_dev"] == 0 and report["overlap_train_test"] == 0, "Found train leakage into dev/test!"
 def _filter_gold_by_fields(
     gold: Dict[Tuple[str, str, str, str], Dict[str, Set[str]]],
@@ -1007,7 +982,7 @@ def _filter_gold_by_fields(
             continue
         if unit_level and str(ul).strip() != unit_level:
             continue
-        # 注意：unit_id 允许你显式传 "" 来筛 article，因此这里用 actor 一样的逻辑：
+        # Note: unit_id may be explicitly set to "" to select articles, so use actor-like logic here.
         if unit_id != "" and str(ui) != unit_id:
             continue
         if actor and str(a).strip() != actor:
@@ -1081,7 +1056,7 @@ def main():
     ap.add_argument("--sample_seed", type=int, default=42)
 
 
-    # ===== CHANGE 4) 在 main() 里 argparse 增加这些参数 =====
+    # ===== CHANGE 4) Add these argparse options in main() =====
     ap.add_argument("--adapter_dir", type=str, default="",
                     help="For G3 infer: path to LoRA adapter dir (the out_dir from train_lora).")
     ap.add_argument("--load_dir", type=str, default="",
@@ -1090,8 +1065,8 @@ def main():
                     help="For G3 infer with adapter_dir: merge LoRA into base before inference. 1/0")
     ap.add_argument("--save_merged_dir", type=str, default="",
                     help="For train_lora: additionally save merged full model to this dir.")
-    ap.add_argument("--hf_token", type=str, default="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",
-                    help="Optional HuggingFace token (or set env HUGGINGFACE_HUB_TOKEN).")
+    ap.add_argument("--hf_token", type=str, default="",
+                    help="Optional HuggingFace token, or set HUGGINGFACE_HUB_TOKEN.")
     ap.add_argument("--hv1_label_dir", type=str, default="",
                     help="level-1 human value labels.")
     ap.add_argument("--hv_label_dir", type=str, default="",
@@ -1106,7 +1081,7 @@ def main():
                     help="Batch size for local inference (G2/G3). Start from 2 if OOM.")
     ap.add_argument("--dump_sampled_dir", type=str, default="dataset/",
                     help="If set, after sampling, dump sampled train/dev/test event+hv json files into this dir.")
-    # 新增：是否使用时间戳目录
+    # New: whether to use a timestamped directory
     ap.add_argument("--use_timestamp", type=str, default="1",
                     help="If 1, create timestamped output dir to avoid overwriting previous runs. 0 to use fixed dir.")
     ap.add_argument("--run_name", type=str, default="",
@@ -1213,23 +1188,23 @@ def main():
         print(f"  run_dir    : {args.out_dir}")
         print(f"{'=' * 70}\n")
 
-    # 生成带时间戳的输出目录
+    # Generate a timestamped output directory
     if str2bool(args.use_timestamp):
         timestamp = time.strftime("%Y%m%d_%H%M%S")
 
-        # 构建目录名称
+        # Build the directory name
         if args.run_name:
             dir_suffix = f"{args.run_name}_{timestamp}"
         else:
-            # 使用模型名的简短版本
-            model_short = args.model_name.split('/')[-1][:20]  # 取最后部分，最多20字符
+            # Use a shortened model name
+            model_short = args.model_name.split('/')[-1][:20]  # Take the last path component, up to 20 characters
             dir_suffix = f"{model_short}_{timestamp}"
 
-        # 重写所有输出路径
+        # Rewrite all output paths
         base_out_dir = os.path.dirname(args.out_dir) or "outputs"
         args.out_dir = os.path.join(base_out_dir, dir_suffix)
 
-        # 更新所有相关路径
+        # Update all related paths
         args.pred_out = os.path.join(args.out_dir, "test_pred.json")
         args.report_out = os.path.join(args.out_dir, "test_report.json")
         args.pred_out_dev = os.path.join(args.out_dir, "dev_pred.json")
@@ -1245,7 +1220,7 @@ def main():
         print(f"  Warning: This will overwrite previous results!")
         print(f"{'=' * 70}\n")
 
-    #  保存运行配置
+    #  Save run configuration
     os.makedirs(args.out_dir, exist_ok=True)
     run_config = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -1307,7 +1282,7 @@ def main():
     print("[INFO] instances:", len(train_gold), len(dev_gold), len(test_gold))
 
     # ========================================================================
-    # d 是你的 dict 获取长文本测试 mapreduce是你的 dict
+    # d is a dict used for long-text MapReduce testing.
     # test_abcs = list(test_gold.items())
     # test_abcs_new = []
     # test_abc_keys_new = []
@@ -1501,7 +1476,7 @@ def main():
                     print("target_head:", tok.decode(input_ids[first_sup:first_sup + 120], skip_special_tokens=True))
                 print("-" * 60)
 
-        # 用法：
+        # Usage：
         debug_check_mask(train_ds, tok, n=3)
 
         model, tok = train_lora_sft(
@@ -1523,8 +1498,8 @@ def main():
             grad_accum=args.grad_accum,
             max_new_tokens_eval=args.max_new_tokens
         )
-        # ===== CHANGE 7) 在 train_lora 分支训练完后（你现在 train_lora_sft 里已经 save_pretrained 了）=====
-        # 你在 main() 的 train_lora 分支里拿到 model,tok 后，加：
+        # ===== CHANGE 7) After train_lora finishes; train_lora_sft already calls save_pretrained =====
+        # After obtaining model and tok in the train_lora branch of main(), add:
         maybe_save_merged_full_model(model, tok, args.save_merged_dir)
 
         # final test eval
@@ -1537,7 +1512,7 @@ def main():
             model_name=args.model_name,
             use_auto_map=use_auto_map,
             hf_token=hf_token,
-            adapter_dir=use_adapter_dir,  #  best 优先
+            adapter_dir=use_adapter_dir,  #  prefer best
             load_dir="",
             merge_lora_infer=False,
         )
@@ -1564,7 +1539,7 @@ def main():
             infer_batch_size=args.infer_batch_size,
         )
 
-        # 保存 test 预测内容（和 infer 分支一致）
+        # Save test predictions, consistent with the infer branch
         serializable = []
         for iid, d in test_pred.items():
             guid, unit_level, unit_id, actor = iid

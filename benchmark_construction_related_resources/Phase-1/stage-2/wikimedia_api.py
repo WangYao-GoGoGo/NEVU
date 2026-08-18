@@ -1,3 +1,5 @@
+"""Reference utilities for querying Wikinews/Wikimedia pages during collection."""
+
 import os
 import json
 import sys
@@ -49,7 +51,7 @@ def create_retry_session():
     return session
 
 def search_wikinews_paginated(query, total_limit=200, per_page=50):
-    session = create_retry_session()  # ✅ 使用带 retry 的 session
+    session = create_retry_session()  # Use a retry-enabled session
     all_results = []
     offset = 0
     while len(all_results) < total_limit:
@@ -77,8 +79,8 @@ def search_wikinews_paginated(query, total_limit=200, per_page=50):
 
 
 def get_page_extract(page_title):
-    session = create_retry_session()  # ✅ 使用带 retry 的 session
-    safe_title = quote(page_title, safe='')  # ✅ URL 安全处理
+    session = create_retry_session()  # Use a retry-enabled session
+    safe_title = quote(page_title, safe='')  # URL-safe encoding
     params = {
         "action": "query",
         "prop": "extracts",
