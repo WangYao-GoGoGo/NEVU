@@ -20,6 +20,12 @@ We release the following materials for reproducibility:
 
 The construction resources are released for transparency and auditability. They document the prompts, filtering scripts, and annotation-interface templates used during dataset creation, but they are not intended to exactly reconstruct the original collection pipeline because the pipeline depended on third-party news sources, APIs, and blind-test materials that cannot all be redistributed.
 
+## Dataset
+
+This repository provides code, prompts, settings, and reproducibility/reference materials only. The dataset files are released separately at:
+
+https://anonymous.4open.science/r/nevu_repo-5D42/
+
 ## Reproducible Evaluation Materials
 
 Use `experimental_settings/` as the source for the reported experimental settings. These files record the command-line arguments used for each model group and baseline.
@@ -40,9 +46,11 @@ The accepted-release package will include split manifests for:
 - `train`
 - `dev`
 - `public_test`
-- protected blind-test GUIDs after the blind period ends
+- protected blind-test GUIDs after the blind period ends in January 2027
 
 The split files will contain GUID-level membership only, not third-party article text that cannot be redistributed. See `data_splits/README.md` and `data_splits/split_manifest.schema.json` for the intended manifest format.
+
+Some auxiliary analysis materials are also withheld during the blind period. The datasets used for the paper's Multi-Group Candidate Acceptance and Agreement Analysis include blind instances because the sampling procedure preserved type balance. These analysis datasets will be released in January 2027. The Controlled Grouping Test against Heuristic Baselines also uses blind materials and will be released in January 2027.
 
 ## Materials Not Redistributed
 
@@ -50,7 +58,9 @@ Some materials cannot be released in full:
 
 - Third-party news article text or API responses when redistribution is restricted by provider terms.
 - Credentials, API keys, private service endpoints, and local machine paths.
-- Blind-test labels or protected GUID mappings before the blind evaluation period ends.
+- Blind-test labels or protected GUID mappings before the blind evaluation period ends in January 2027.
+- Multi-Group Candidate Acceptance and Agreement Analysis datasets before January 2027, because they include blind instances sampled to preserve type balance.
+- Controlled Grouping Test against Heuristic Baselines materials before January 2027, because they also include blind materials.
 - Full proprietary model weights or third-party model files governed by their original licenses.
 
 Where full redistribution is not permitted, we provide GUID manifests, processing descriptions, prompt templates, and runnable evaluation scripts so that released dataset files can be evaluated consistently.

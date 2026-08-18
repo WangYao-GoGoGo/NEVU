@@ -1,5 +1,5 @@
 <View>
-            <HyperText name="hyperlink_text" value="&lt;a href='https://ii.slis.tsukuba.ac.jp/echv_event_system/behavior_details.html?uuid=$uuid&amp;phase_version=$phase_version&amp;annotation_filename=$annotation_filename' target='_blank'&gt;📋 Go to Detail Page!&lt;/a&gt;" />
+            <HyperText name="hyperlink_text" value="&lt;a href='https://xxxxx/echv_event_system/behavior_details.html?uuid=$uuid&amp;phase_version=$phase_version&amp;annotation_filename=$annotation_filename' target='_blank'&gt;📋 Go to Detail Page!&lt;/a&gt;" />
             <Header value="*Annotation Question:" size="6"/>
             <Text name="question" value="$questions"/>
             <Header value="*Explanation from Large Language Models:" size="6"/>

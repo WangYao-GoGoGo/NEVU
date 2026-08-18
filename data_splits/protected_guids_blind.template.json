@@ -8,7 +8,7 @@
       "guid_file": "protected_guids_blind.txt",
       "guid_count": 350,
       "label_visibility": "withheld_until_blind_period_ends",
-      "notes": "Protected GUIDs and labels are released after the blind period ends, subject to third-party redistribution constraints."
+      "notes": "Protected GUIDs and labels are released in January 2027, subject to third-party redistribution constraints."
     }
   }
 }

@@ -50,6 +50,8 @@ The LoRA implementation in `unified_value_recognition.py` uses rank 16, alpha 32
 - `dataset/hv/`: human-value taxonomy and label mappings.
 - `dataset/news/` and `dataset/wiki_ontology/`: news-type and ontology reference files.
 
+Protected blind-test GUIDs and labels will be released in January 2027. The paper's Multi-Group Candidate Acceptance and Agreement Analysis datasets also include blind instances due to type-balanced sampling and will be released in January 2027. The Controlled Grouping Test against Heuristic Baselines uses blind materials as well and will be released in January 2027.
+
 ## Non-Released Materials
 
-We do not release private credentials, local paths, third-party article text or API responses whose provider terms prohibit redistribution, full third-party model weights, or blind-test labels before the blind period ends.
+We do not release private credentials, local paths, third-party article text or API responses whose provider terms prohibit redistribution, full third-party model weights, blind-test labels before January 2027, Multi-Group Candidate Acceptance and Agreement Analysis datasets before January 2027, or Controlled Grouping Test materials before January 2027.
