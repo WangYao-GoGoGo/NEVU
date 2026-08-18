@@ -10,6 +10,6 @@ def compute_start_index(search_guid, file_path):
     return null
 
 if __name__ == '__main__':
-    file_path = "/tmp/echv_wangyao/dataset/initial_corpus/initial_dataset_1.json"
+    file_path = "dataset/initial_corpus/initial_dataset_1.json"
     start_index = compute_start_index("0-4327-1-t", file_path)
     print(start_index)

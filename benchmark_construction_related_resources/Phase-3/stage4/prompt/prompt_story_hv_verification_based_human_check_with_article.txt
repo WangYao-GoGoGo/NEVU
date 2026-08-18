@@ -1,0 +1,146 @@
+[Task Description:]
+You are given a factual news article with its extracted subevents and story-based temporal subevents (aggregated events in the story line). For each atomic subevent, human value QA verification has already been performed. Thus, each subevent-level human value label has a binary verification result:
+    * answer = "yes": the subevent-level value label is correct (the actor’s behavior truly reflects or contradicts this value).
+    * answer = "no": the subevent-level value label is incorrect (the actor’s behavior does not meaningfully reflect or contradict this value).
+Based on these verified subevent-level labels, you must now evaluate candidate human value labels for story-based temporal subevents. Each story-based temporal subevent is an aggregated event constructed from multiple related subevents in the narrative timeline. Your task is to verify the appropriateness of each candidate human value label at the story-based temporal subevent level, using:
+    * The article content and overall context.
+    * The list of related atomic subevents.
+    * The verified human value labels of those subevents (including both correct and incorrect labels).
+Each value label is categorized as either:
+    * aligned_with_human_values: the actor's behavior is thought to reflect or uphold a given human value.
+    * contradictory_to_human_values: the actor's behavior is thought to violate or go against a given human value.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
+Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+This whole task comprises the following subtask:
+[Subtask: Story-based Human Value Label Verification (Using Subevent-level Evidence)]
+* Goal:
+    * For each story-based temporal subevent and each candidate human value label (for a given actor), evaluate whether the label is appropriate at the story-level. You must make a binary judgment:
+        * "yes" — if the value label is correctly assigned to the actor at the story-based temporal subevent level.
+        * "no" — if the value label is incorrectly assigned or not sufficiently supported.
+* Available Evidence:
+    * For each story-based temporal subevent, you are given:
+    * The story-based temporal subevent description.
+    * A list of related subevents that were used to construct this story-based subevent.
+    * For each related subevent, its verified human value labels:
+        * answer = "yes": correct subevent-level value labels (positive evidence).
+        * answer = "no": incorrect subevent-level value labels (negative evidence).
+
+[Instructions:]
+1. Use verified subevent-level labels as evidence.
+    * Treat subevent-level labels with answer = "yes" as reliable positive evidence that the corresponding actor, in that subevent, truly aligns with or contradicts the given value.
+    * Treat subevent-level labels with answer = "no" as negative evidence: they indicate that this actor–value–polarity combination is not supported by that subevent.
+2. For each story-based temporal subevent and each candidate value label:
+    * Please answer "yes" or "no" for the candidate label, and briefly justify your answer based on:
+        * The article content,
+        * The story-based temporal subevent description, and
+        * The pattern of subevent-level evidence (both positive and negative).
+    * Answer "yes" if:
+        * The actor’s behavior across the related subevents, as supported by correct subevent-level labels, clearly reflects or contradicts the candidate human value at the aggregated, story-based level.
+        * The value can be reasonably inferred from multiple relevant subevents whose verified labels indicate consistent behavior regarding this value.
+    * Answer "no" if:
+        * The actor’s behavior at the story-based level does not clearly reflect or contradict the value.
+    * The candidate label is only backed by subevent-level labels that were verified as "no".
+    * The value label is assigned to the wrong actor or is not supported by the overall evidence.
+    * The connection between the actor and the value is weak, ambiguous, or only indirectly implied.
+3. Do not re-judge subevent-level labels.
+    * You must trust the given verification results (answer: "yes"/"no") at the subevent level.
+    * Do not change or reinterpret subevent-level answers; instead, use them as fixed evidence when reasoning at the story-based level.
+4. Be specific and evidence-based.
+    * In your explanation, refer to:
+        * The actor’s key actions or decisions across the related subevents.
+        * Whether correct subevent-level labels consistently indicate alignment or contradiction with the candidate value.
+        * Any contradictions, mismatches, or lack of support from subevent-level evidence.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article Time:]**
+[Article_time]
+
+**[Article:]**
+[Article_value]
+
+**[Human Value Definitions:]**
+[Human_value_definitions]
+
+**[Story Narrative-based Temporal Events:]**
+[story_narrative_temporal_events]
+
+**[Related Subevents:]**
+[related_subevents]
+
+[Subevent-level Verified Human Value Labels (Evidence – Correct Labels):]
+This block contains only subevent-level human value labels that have been manually verified as CORRECT by human annotators (i.e., answer = "yes").
+These labels should be treated as reliable POSITIVE evidence.
+[subevents_level_verified_labels_correct]
+
+[Subevent-level Verified Human Value Labels (Evidence – Incorrect Labels):]
+This block contains only subevent-level human value labels that have been manually verified as INCORRECT by human annotators (i.e., answer = "no").
+These labels should be treated as NEGATIVE evidence: they indicate that the corresponding actor–value–polarity combination is NOT supported by that subevent.
+[subevents_level_verified_labels_incorrect]
+
+**[Story-based Temporal Subevents and Candidate Labels:]**
+[story_verification_questions]
+
+**[Output Format Example:]**
+{
+  "story_level_verified_results": {
+      "actor": "actor1",
+      "human_value_label": "label1",
+      "answer": "yes | no",
+      "explanation": "Justification for yes or no at the story-based temporal subevent level."
+    }
+}
+
+[Answer Guidelines with Examples:]
+For aligned_with_human_values labels at story-based temporal subevent level:
+    * Answer "yes" when:
+        * Across related subevents, the actor’s actions or intentions consistently demonstrate the value.
+        * Multiple correct subevent-level labels (answer = "yes") for this actor and value (or closely related values) support the same interpretation at the story-based level.
+    * Example:
+        * Several subevents show a politician repeatedly arranging shelters, funding, and support programs for refugees, with subevent-level labels verified as aligning with "Be helpful" and "Be responsible".
+        * Story-based candidate label: aligned_with_human_values → "Be helpful" for this politician.
+        → Answer: "yes".
+    * Answer "no" when:
+        * The actor’s actions in related subevents do not support the value, or the connection is unclear or weak.
+        * The only supporting labels are subevent-level labels with answer = "no", or there is no strong pattern of correct labels backing this value at story-level.
+        * The label is attached to the wrong actor or not meaningfully supported by their actions.
+    * Example:
+        * Subevents mainly describe citizens protesting, with correct labels about "Be courageous". Government officials are barely mentioned and have no correct labels linked to "Be responsible".
+        * Story-based candidate label: aligned_with_human_values → "Be responsible" for government officials.
+        → Answer: "no".
+For contradictory_to_human_values labels at story-based temporal subevent level:
+    * Answer "yes" when:
+        * Over multiple related subevents, the actor repeatedly violates, neglects, or acts in opposition to the value.
+        * Correct subevent-level labels with answer = "yes" indicate clear contradictions to the value, forming a consistent pattern at the story level.
+    * Example:
+        * A corporation is repeatedly reported (in multiple subevents) as dumping toxic waste, covering up evidence, and ignoring safety rules, all verified as contradicting "Be protecting the environment".
+        * Story-based candidate label: contradictory_to_human_values → "Be protecting the environment" for this corporation.
+        → Answer: "yes".
+    * Answer "no" when:
+        * The actor appears neutral or supportive of the value at story level.
+        * Negative behaviors are not clearly established or are only present in subevent-level labels that were verified as incorrect (answer = "no").
+    * Example:
+        * A teacher consistently enforces classroom rules and is described as fair and supportive; subevent-level labels contradicting "Be respectful" were mostly verified as "no".
+        * Story-based candidate label: contradictory_to_human_values → "Be respectful" for the teacher.
+        → Answer: "no".
+        * These rules aim to ensure that each story-based label is grounded in:
+        * What the related subevents actually describe, and
+        * The verified subevent-level human value annotations.
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+    2. JSON comments (//) are strictly forbidden.
+    3. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    4. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    5. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    6. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    7. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    8. Use double quotes for all JSON keys and string values (e.g., "key": "value").

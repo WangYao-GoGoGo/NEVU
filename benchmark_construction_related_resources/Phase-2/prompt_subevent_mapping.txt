@@ -1,0 +1,60 @@
+**[Task Description:]**
+The goal of this task is to map each extracted subevent from the original news article (entire_article) to one or more specific sentences from the pre-segmented sentence list (sentences_list).
+Each subevent should be aligned only to sentences that explicitly state or directly entail its content, without including irrelevant or thematically related sentences.
+
+**[Requirements:]**
+1. Completeness (must-cover)
+    * Every subevent in the list must appear in the output with at least one mapped sentence.
+    * No subevent can be omitted.
+    * However, the number of mapped sentences should be minimal — only those that directly express the subevent.
+2. Precision (avoid over-mapping)
+    * Do not include sentences just because they are in the same topic, contain similar words, or appear nearby.
+    * The sentence must directly describe the action, participants, or outcome of the subevent.
+    * If the subevent is partially implied but not clearly stated, do not map it.
+3. One-to-many allowed but limited
+    * A subevent may be linked to multiple consecutive sentences only if its description logically spans them.
+    * Avoid mapping to more than 2–3 sentences, unless absolutely necessary.
+4. No hallucination
+    * Use only the subevent and sentence lists provided.
+    * Do not invent new subevents or sentences.
+5. Sentence reference format
+    * Use the "sentence_id" field exactly as it appears in the [Sentences:] list.
+    * Do not map to items labeled as "heading" or "summary".
+6. Output format
+    * Return the results as a valid JSON list of mappings, using this schema:
+
+**[Output Format Example:]**
+Return the result in the following JSON format:
+{
+  "mappings": [
+    {
+      "subevent_id": 0,
+      "aligned_sentence_ids": [0, 1]
+    },
+    {
+      "subevent_id": 1,
+      "aligned_sentence_ids": [2]
+    }
+  ]
+}
+
+[Sentences:]
+{"entire_article": [Sentence_list_value]}
+
+[Subevents:]
+{"subevents": [Subevent_list_value]}
+
+**[Sentence Alignment Rules:]**
+1. Exact factual overlap
+* The sentence must explicitly mention the key event elements — actor, action, object, and result — of the subevent.
+2. Granularity constraint
+* If a subevent can be fully represented by one sentence, prefer single-sentence mapping.
+* Only include multiple sentences if none alone fully captures it.
+3. Semantic distance filter
+* If the sentence’s topic or event differs from the subevent’s main focus, exclude it even if contextually related.
+4. Sequential coherence
+* If the subevent spans multiple sentences, ensure those sentences are consecutive.
+5. Compactness rule
+* Prefer fewer sentences with higher content overlap rather than many loosely relevant ones. (Aim for 1–2 sentences per subevent in most cases.)
+6. Confidence threshold (internal rule for model reasoning)
+* Map a sentence to a subevent only if confidence > 0.7 in factual alignment. Otherwise, skip it.

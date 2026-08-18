@@ -1,0 +1,114 @@
+**[Task Description:]**
+You are given a factual news article as a single document unit. For each article, a set of value-based QA questions has been generated based on previously predicted human value labels. Each value label is categorized as either:
+    * aligned_with_human_values: the actor's behavior is thought to reflect or uphold a given human value.
+    * contradictory_to_human_values: the actor's behavior is thought to violate or go against a given human value.
+Each question asks whether a specific actor in the article demonstrates (or contradicts) a specific human value, and with a short definition of the value provided.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+This whole task comprises the following subtasks:
+[Subtask: Human Value Label Verification]
+    Goal: The task is to evaluate the appropriateness of each human value label with respect to the entire article and make a binary judgment:
+    Instructions:
+        1. Please answer the question field for each entry in the provided JSON using "yes" or "no", and briefly justify your answer in 1–2 sentences based on evidence from the article as a whole.
+            * yes — if the value label is correctly assigned (i.e., the article truly reflects or contradicts the value as claimed)
+            * no — if the value label is incorrectly assigned (i.e., the article does not meaningfully reflect or contradict the value)
+        2. For each value label, please also provide a brief explanation to justify your answer based on the overall content and implications of the article.
+        3. Be specific and focus on the actions, intentions, or consequences described in the entire article that relate to the human value in question.
+    Output:
+        1. "id": **copied directly from the input** (do not change or regenerate).
+        2. "actor" and "human_value_label": **copied directly from the input** (do not change or generate).
+        3. "answer": "yes" or "no".
+        4. "explanation": Justification for yes or no.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article Time:]**
+[Article_time]
+
+**[Article:]**
+[Article_value]
+
+**[Human Value Definitions:]**
+[Human_value_definitions]
+
+**[Article-based Verification Questions:]**
+[article_verification_questions]
+
+**[Output Format Example:]**
+{
+    "verified_results":
+    {
+        "aligned_with_human_values": [
+            {
+                "id": "0",
+                "actor": "actor1",
+                "human_value_label": "label1",
+                "answer": "yes",
+                "explanation": "Justification for yes."
+            },
+            {
+                "id": "1",
+                "actor": "actor1",
+                "human_value_label": "label2",
+                "answer": "no",
+                "explanation": "Justification for no."
+            }
+        ],
+        "contradictory_to_human_values": [
+            {
+                "id": "0",
+                "actor": "actor1",
+                "human_value_label": "label3",
+                "answer": "yes",
+                "explanation": "Justification for yes.."
+            },
+            {
+                "id": "1",
+                "actor": "actor2",
+                "human_value_label": "label1",
+                "answer": "no",
+                "explanation": "Justification for no."
+            }
+        ]
+    }
+}
+
+**[Answer Guidelines with Examples:]**
+Please refer to the following examples and conditions to guide your "yes"/"no" decisions:
+For aligned_with_human_values labels:
+    * Answer "yes" when:
+        The value is clearly supported by the actor’s behavior as described in the article.
+        The human value label can be reasonably inferred based on cumulative evidence across the article.
+        Even if the value is not explicitly named, the actions, motivations, or outcomes show alignment.
+        Example: The article describes how the Anangu people consistently advocated for cultural protection and successfully closed Uluru to climbers, reflecting responsibility and care for their heritage → "Be responsible" → Answer: yes
+    * Answer "no" when:
+        The label is unsupported by the article or refers to irrelevant/inactive actors.
+        The value is attributed to someone whose behavior is neutral or not described in a way that supports the value.
+        The actor's behavior not only fails to reflect the given human value, but also clearly violates or undermines the spirit of that value.
+        Example: The article focuses on climbers’ actions, but the label "Be responsible" is assigned to park authorities, even though the article does not mention any responsible behavior or decisions made by them → Answer: no
+For contradictory_to_human_values labels:
+    * Answer "yes" when:
+        The article shows the actor clearly violating or disregarding the value.
+        There is strong textual support for contradiction (e.g., neglect, disrespect, harm).
+        Example: The article highlights that some climbers ignored Indigenous pleas not to climb Uluru out of respect, and proceeded anyway → labeled as contradicting "Be respectful" → Answer: yes
+    * Answer "no" when:
+        The actor's behavior either aligns with the value or is irrelevant/neutral.
+        The actor is mentioned, but no meaningful action related to the value is presented.
+        Example: A teacher strictly enforcing classroom rules is labeled as contradicting "Be respectful" with no evidence of disrespect → no.
+These rules aim to ensure that each human value label is evaluated in the context of the article as a whole, maintaining consistency between actor, value, and the narrative presented in the text.
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+    2. JSON comments (//) are strictly forbidden.
+    3. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    4. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    5. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    6. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    7. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    8. Use double quotes for all JSON keys and string values (e.g., "key": "value").

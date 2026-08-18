@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subevent Details</title>
+    <link rel="icon" type="image/png" href="icon.ico">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .content {
+            width: 80%;
+            margin: auto;
+            text-align: left;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #65A565FF;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        #form-link {
+            display: inline-block;
+            background: #65A565FF;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        #form-link:hover {
+            background: #65A565FF;
+        }
+
+        p {
+            font-size: 16px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 5px solid #65A565FF;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        p strong {
+            color: #65A565FF;
+            font-weight: bold;
+        }
+
+        span {
+            font-weight: normal;
+            color: #333;
+        }
+    </style>
+
+</head>
+<body>
+
+    <h1>Subevent Details</h1>
+    <div class="content">
+        <p><strong>GUID:</strong> <span id="guid"></span></p>
+        <p><strong>LocalId:</strong> <span id="localId"></span></p>
+        <p><strong>Title:</strong> <span id="title"></span></p>
+        <p><strong>Article Content:</strong> <span id="article"></span></p>
+        <p><strong>Subevent:</strong> <span id="subevent"></span></p>
+        <p><strong>EventGenre:</strong> <span id="eventGenre"></span></p>
+        <p><strong>EventType:</strong> <span id="eventType"></span></p>
+        <p><strong>🔹 Argument Mentions:</strong></p>
+        <table id="arg-mention-table">
+            <thead>
+                <tr>
+                    <th>Argument role</th>
+                    <th>Argument</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <p><strong>🔹 Human Values:</strong></p>
+        <table id="human-values-table">
+            <thead>
+                <tr>
+                    <th>Human Value</th>
+                    <th>Confidence</th>
+                    <th>Explanation</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <p><strong>Evaluation & Annotation:</strong> <a id="evaluation-link" href="#" target="_blank">📋 Go to Evaluation Page!</a></p>
+
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const guid = params.get("guid");
+        const localId = params.get("localid");
+
+        document.getElementById("guid").innerText = guid;
+        document.getElementById("localId").innerText = localId;
+
+        function fetchSubeventDetails() {
+            fetch(`/subevent_details?guid=${guid}&localid=${localId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) {
+                        document.querySelector(".content").innerHTML = "<p>未找到事件数据</p>";
+                        return;
+                    }
+
+                    document.getElementById("title").innerText = data.Title || "N/A";
+                    document.getElementById("article").innerText = data.Article || "N/A";
+                    document.getElementById("subevent").innerText = data.SubEventSummary || "N/A";
+                    document.getElementById("eventGenre").innerText = data.EventGenre || "N/A";
+                    document.getElementById("eventType").innerText = data.EventType || "N/A";
+                    document.getElementById("evaluation-link").href = `evaluation.html?guid=${data.GlobalId}&localid=${data.localId}`;
+
+                    document.getElementById("arg-mention-table").querySelector("tbody").innerHTML = parseArguments(data.argumentMentions);
+                    document.getElementById("human-values-table").querySelector("tbody").innerHTML = parseHumanValues(data.HumanValueLabels);
+                })
+                .catch(error => console.error("❌ 获取子事件详情失败:", error));
+        }
+
+        function parseHumanValues(humanValuesString) {
+            if (!humanValuesString) return "<tr><td colspan='3'>暂无数据</td></tr>";
+
+            let rows = [];
+            let valuesArray = humanValuesString.split("|");
+
+            for (let i = 0; i < valuesArray.length; i += 3) {
+                let value = valuesArray[i] || "N/A";
+                let confidence = (i + 1 < valuesArray.length) ? valuesArray[i + 1] : "N/A";
+                let explanation = (i + 2 < valuesArray.length) ? valuesArray[i + 2] : "N/A";
+                rows.push(`<tr><td>${value}</td><td>${confidence}</td><td>${explanation}</td></tr>`);
+            }
+
+            return rows.join("");
+        }
+
+        function parseArguments(argumentsString) {
+            if (!argumentsString) return "<tr><td colspan='2'>暂无数据</td></tr>";
+
+            let rows = [];
+            let argumentsArray = argumentsString.split("|");
+
+            for (let i = 0; i < argumentsArray.length; i += 2) {
+                let role = argumentsArray[i] || "N/A";
+                let argument = (i + 1 < argumentsArray.length) ? argumentsArray[i + 1] : "N/A";
+                rows.push(`<tr><td>${role}</td><td>${argument}</td></tr>`);
+            }
+
+            return rows.join("");
+        }
+
+        fetchSubeventDetails();
+    </script>
+
+</body>
+</html>

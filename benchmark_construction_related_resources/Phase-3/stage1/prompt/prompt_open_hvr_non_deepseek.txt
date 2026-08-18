@@ -1,0 +1,324 @@
+**[Task description]**
+This task consists of five subtasks, aiming to perform multi-level human value evaluation and disambiguation based on previously extracted event data from the provided [Article:]. Specifically, it involves analyzing human values at the article, subevent, behavior chain, and story narrative levels, as well as resolving ambiguities in sentence-level subevents to clarify event references and relationships.
+Please consolidate the outputs from all subtasks into a single, complete JSON structure, ensuring the output format adheres to the following example: [Example: output format]
+Note: You must only classify values under the actors provided in [Human Value-based Actors:]. Do not infer or introduce any new actors.
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+        1.1 Do not leave placeholders like "// Additional behavior chains as needed".
+        1.2 Fully expand and explicitly write out every field.
+        1.3 If you reach token limits, inform explicitly instead of placing placeholders.
+    2. The generated JSON output must strictly according to the provided specifications. The final JSON must be a valid JSON object with no additional commentary, comment lines, or annotations. In other words, do not include any lines or inline comments such as // ... Additional subevents_human_values entries for subevent_ids 3 to 21 or any similar commentary. Ensure that the JSON output is clean and free from any non-JSON text.
+    3. Ensure that the output does not include any comments such as "// Additional action triplets omitted for brevity" and generate as much complete content for all subtasks as possible.
+    4. JSON comments (//) are strictly forbidden.
+    5. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    6. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    7. All key-value pairs must comply with JSON standards to guarantee error-free parsing.
+    8. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    9. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    10. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    11. Use double quotes for all JSON keys and string values (e.g., "key": "value").
+    12. Note: The content in the [Example: output format] are unrelated to the task.
+    13. All keys in the generated JSON must exactly match the actor names provided in [Human Value-based Actors:]. The system will perform strict key matching during evaluation.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
+Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
+Behavior: Subject behavior is the core element within a subevent, referring to the series of activities performed by each participating subject (such as an individual or group). Through these behaviors, subjects demonstrate their specific actions and decision-making processes in a given context, thereby driving the progression of the subevent.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+This whole task comprises the following subtasks:
+[Subtask-1: Article Human Value Understanding]
+    Goal: For each actor involved in the article, identify the human values they reflect, and classify them into "aligned_with_human_values" and "contradictory_to_human_values".
+        Do not add or infer new actors. Only use the provided actor list for classification.
+    Rules:
+        1. All identified values must be grouped under the respective actor/group who reflects them.
+        2. For each actor, use two fields to organize the values: "aligned_with_human_values" and "contradictory_to_human_values". Each value should be placed under the appropriate field according to whether it supports or violates the human value.
+        3. If no values exist for a category within an actor, use an empty object {} to preserve consistency.
+        4. For each identified human value, provide:
+            4.1. A confidence score: All generated confidence scores should be formatted in scientific notation (e.g., 9.173450e-01).
+            4.2. A justification explaining why the human value is present in the article.
+    Input: [Article:], [Human Value:]
+    Output: [field: "article_human_values"]
+
+[Subtask-2: Subevents Human Value Understanding]
+    Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
+    Goal: For each actor involved in the [field: "subevent"], identify the human values they reflect and organize them into "aligned_with_human_values" and "contradictory_to_human_values".
+    Rules:
+        1. For each identified human value, determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
+    Input: [Article:], [field: "subevent"], [field: "argument_mentions"], [Human Value:]
+    Output: [field: "subevents_human_values"]
+
+[Subtask-3: Behavior Chain Human Value Understanding]
+    Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
+    Goal: Identify the human values reflected by each [field: "behaviors"] in the behavior chain, and organize them into "aligned_with_human_values" and "contradictory_to_human_values". The behavior chains are represented by [field: "behavior_ids_chains"], which contains a list of behavior IDs rather than behavior names. For each behavior chain, identify:
+        1. The set of human values reflected in the behaviors.
+        2. Determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
+        3. The confidence score for each human value.
+        4. A justification explaining why the value is associated with the behavior chain.
+    Input: [Article:], [field: "behaviors"], [Human Value:]
+    Output: [field: "behavior_chains_human_values"]
+
+[Subtask-4: Story Narrative Human Value Understanding]
+    Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
+    Goal: For each actor involved in the [field: "story_narratives"], identify the human values they reflect and organize them into "aligned_with_human_values" and "contradictory_to_human_values". For each [story_narrative: description], identify:
+        1. The set of human values reflected.
+        2. Determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
+        3. The confidence score for each human value.
+        4. A justification explaining how the narrative conveys the value.
+    Input: [Article:], [field: "story_narratives"], [Human Value:]
+    Output: [field: "story_narrative_human_values"]
+
+**[Common Rules for all subtasks:]**
+    1. Ensure concise, accurate, and complete content, paying special attention to numbers, names, abbreviations, and dates.
+    2. Maintain consistency across subtasks to ensure the overall narrative is coherent.
+    3. The [Article Title:], [Article:] or other text fields may contain Unicode punctuation (e.g., “ ”, ’, —) or other non-ASCII characters. If such characters appear in any JSON output, please either properly escape them (e.g., \u2019 for ’) or replace them with standard ASCII equivalents to avoid parsing errors. Always use valid ASCII double quotes (") for JSON keys and string values, and escape internal quotes as needed (e.g., \").
+
+**[Common Rules for Human Value Understanding subtasks:]**
+    1. For each [field: "subevent"], identify the possible and relevant underlying human values according to the given [Human Value:] categories.
+    2. Each identified human value must be structured as a JSON object:
+        2.1. Determine the responsible actor/group and nest the value under that actor.
+        2.2. All human values must be organized in an actor-centric format, where each actor has two subfields:
+            - "aligned_with_human_values": { value_key: { confidence, explanation }, ... }, values that support or promote a human value
+            - "contradictory_to_human_values": { value_key: { confidence, explanation }, ... }
+                Values that oppose or violate a human value.
+                Use {} if empty.
+        2.3. The full structure must follow the actor-centric format; do not list values globally across actors.
+        2.4. [field: "key"]: The level-1 human values
+        2.5. [field: "value"]: An object containing:
+            2.5.1. Confidence scores must:
+                - Be formatted in scientific notation (e.g., 9.034560e-01)
+                - Reflect semantic variation across different value types, actors, and layers
+                - Follow a formal, statistical style (e.g., softmax, ensemble, etc.)
+            2.5.2. [field: "explanation"]: Provide a detailed explanation, strictly between 20 and 50 words, for why the [field: "subevent"] reflects this human value. Ensure the explanation meets this word limit—responses shorter than 20 words or longer than 50 words are not acceptable. If necessary, rephrase explanations to meet this word limit. (Do not display the word count.)
+    3. Ensure that the identified human values are sorted in descending order by the [field: "confidence"] score.
+    4. Actor Restriction Rule:
+        - Only assign values to the actor names explicitly listed in [Human Value-based Actors:].
+        - Do not create, modify, or infer any new actor groups during classification.
+        - If an actor has no values at a specific level, retain the actor with empty subfields ("aligned_with_human_values": {}, "contradictory_to_human_values": {}).
+    5. For each human value:
+        5.1. Determine the social role/group (e.g., religious organizations, government, protestors) reflected in each human value explanation.
+        5.2. Each role may have both aligned and contradictory values.
+        5.3. A value may appear under multiple roles if supported by distinct context.
+    6. CRITICAL RULE on value preservation and augmentation during classification:
+        In the classification subtasks (especially article-level human value classification), it is permitted for the model to introduce additional human value labels that were not present in the input. However, the following rules are non-negotiable and must be followed without exception:
+        6.1. DO NOT MODIFY original human value entries.
+            For any original human values that are reassigned to actor groups, both the confidence and explanation fields must be copied exactly from the input, without alteration. This is absolutely critical. Any modification to the original explanation or confidence score is considered a violation of task requirements.
+        6.2. For newly added human value labels (i.e., values not found in the input):
+            6.2.1. The model must generate a confidence score in scientific notation format (e.g., 9.034560e-01).
+            6.2.2. The model must also provide a concise explanation between 20 and 50 characters in length (in the same language as the article).
+            6.2.3. These values must be logically attributable to the assigned actor group, and must not conflict with the event context.
+        6.3. All human values — both original and newly added — must be properly nested under their respective actor groups in the final JSON structure.
+    7. [Human Value Description:] provides reference explanations for each type of human value, clarifying their meanings to aid in accurate identification and classification. The model should use these descriptions when determining relevant human values in the text.
+    8. For all human value fields (e.g., article_human_values, subevents_human_values, behavior_chains_human_values, story_narrative_human_values), the actor-centric structure must be consistently applied at every semantic level.
+    9. Even if no values are assigned to a particular actor, still include the actor key with both fields ("aligned_with_human_values" and "contradictory_to_human_values") as empty objects {} to ensure structural completeness.
+
+**[Example: output format]**
+{
+  "article_human_values": {
+    "Religious Organizations and Supporters": {
+      "aligned_with_human_values": {
+        "Be holding religious faith": {
+          "confidence": "9.123450e-01",
+          "explanation": "The article features religious organizations expressing their views, reflecting the importance of religious faith."
+        },
+        "Have social recognition": {
+          "confidence": "8.921560e-01",
+          "explanation": "Leaders from major religious organizations publicly voice concerns, indicating social recognition."
+        },
+        "Have a sense of belonging": {
+          "confidence": "8.734560e-01",
+          "explanation": "Religious communities unite against the law, fostering a sense of communal belonging."
+        },
+        "Be just": {
+          "confidence": "8.543210e-01",
+          "explanation": "Calls for fair management of resources and opposition to oppressive laws reflect a desire for social justice."
+        }
+      },
+      "contradictory_to_human_values": {}
+    },
+    "Government / Lawmakers (who passed the controversial law)": {
+      "aligned_with_human_values": {},
+      "contradictory_to_human_values": {
+        "Have a stable society": {
+          "confidence": "8.845670e-01",
+          "explanation": "The passage of the controversial law leads to protests and unrest, undermining societal stability."
+        },
+        "Be respecting traditions": {
+          "confidence": "8.654320e-01",
+          "explanation": "Treating educational institutions as companies is seen as disrespectful to traditional views on education."
+        },
+        "Have social recognition": {
+          "confidence": "8.467890e-01",
+          "explanation": "The law is perceived to favor the wealthy, neglecting recognition of laborers and lower classes."
+        }
+      }
+    }
+  },
+  "subevents_human_values": [
+    {
+      "subevent_id": "0",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be holding religious faith": {
+            "confidence": "9.034560e-01",
+            "explanation": "A religious leader expresses his views, highlighting the role of faith in social issues."
+          },
+          "Be just": {
+            "confidence": "8.845670e-01",
+            "explanation": "Criticism of the law's oppression reflects a desire for social justice."
+          },
+          "Have social recognition": {
+            "confidence": "8.656780e-01",
+            "explanation": "A prominent figure uses his platform to advocate for the lower classes."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    },
+    {
+      "subevent_id": "1",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be respecting traditions": {
+            "confidence": "8.743210e-01",
+            "explanation": "Opposing the treatment of educational institutions as companies respects traditional educational values."
+          },
+          "Be just": {
+            "confidence": "8.543210e-01",
+            "explanation": "Advocating for proper treatment of education aligns with principles of fairness."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    },
+    {
+      "subevent_id": "2",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be responsible": {
+            "confidence": "8.432100e-01",
+            "explanation": "Calling for a judicial review demonstrates accountability and responsibility."
+          },
+          "Have a stable society": {
+            "confidence": "8.234560e-01",
+            "explanation": "Seeking a balanced solution aims to maintain societal stability."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    }
+  ],
+  "behavior_chains_human_values": [
+    {
+      "behavior_ids_chains": [
+        "0",
+        "1",
+        "2"
+      ],
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be holding religious faith": {
+            "confidence": "9.234560e-01",
+            "explanation": "Religious leaders and organizations actively engage in social issues based on their faith."
+          },
+          "Be responsible": {
+            "confidence": "9.032100e-01",
+            "explanation": "Collective actions demonstrate civic responsibility and leadership."
+          },
+          "Have a sense of belonging": {
+            "confidence": "8.834560e-01",
+            "explanation": "Unified efforts foster community solidarity."
+          },
+          "Be just": {
+            "confidence": "8.632100e-01",
+            "explanation": "Advocacy for fair treatment reflects a commitment to justice."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    }
+  ],
+  "story_narrative_human_values": [
+    {
+      "story_narrative_id": "0",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be holding religious faith": {
+            "confidence": "9.334560e-01",
+            "explanation": "Religious leaders act according to their faith-based principles."
+          },
+          "Be just": {
+            "confidence": "9.132100e-01",
+            "explanation": "Advocacy for fairness in law reflects a commitment to justice."
+          },
+          "Be responsible": {
+            "confidence": "8.934560e-01",
+            "explanation": "Encouraging peaceful action demonstrates responsible leadership."
+          },
+          "Have social recognition": {
+            "confidence": "8.850000e-01",
+            "explanation": "Public criticism and advocacy draw significant attention, enhancing the leader's social recognition."
+          },
+          "Have a sense of belonging": {
+            "confidence": "8.750000e-01",
+            "explanation": "The narrative fosters a shared identity among the community, reinforcing a sense of belonging."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    },
+    {
+      "story_narrative_id": "1",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be responsible": {
+            "confidence": "9.134560e-01",
+            "explanation": "Calling for judicial review shows responsibility for future impacts."
+          },
+          "Be just": {
+            "confidence": "9.034560e-01",
+            "explanation": "Seeking legal reform promotes fairness in public policy."
+          },
+          "Have a stable society": {
+            "confidence": "8.934560e-01",
+            "explanation": "A balanced solution helps maintain social order."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    }
+  ]
+}
+
+**[Human Value:]**
+[Human_value]
+
+**[Human Value Description:]**
+[Human_value_description]
+
+**[Article Title:]**
+[Title_value]
+
+**[Article Time:]**
+[Article_time]
+
+**[Human Value-based Actors:]**
+[Human_value_based_actors:]
+
+**[Article:]**
+[Article_value]
+
+**[Extracted Subevent:]**
+{"subevents": [Extracted_subevent]}
+
+**[Extracted Argument Mentions:]**
+{"argument_mentions": [Extracted_argument_mentions]}
+
+**[Extracted Behavior chain:]**
+{"behaviors": [Extracted_behavior_chain]}
+
+**[Generated Story Narrative:]**
+{"story_narratives": [Generated_story_narrative]}

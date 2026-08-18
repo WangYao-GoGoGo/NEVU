@@ -79,7 +79,7 @@ def build_chat_str(tokenizer, system_prompt: str, user_prompt: str, model_name: 
         tokenizer, messages,
         tokenize=False,
         add_generation_prompt=True,
-        enable_thinking=False,   # ✅ Qwen3 会关 thinking；Llama 会自动忽略该参数
+        enable_thinking=False,   #  Qwen3 会关 thinking；Llama 会自动忽略该参数
         model_name=model_name
     )
 
@@ -144,7 +144,7 @@ def local_generate_json_batch_from_ids(
     pad_prompt_len = input_ids.shape[1]  # = max_len
     outs = []
     for i in range(gen.shape[0]):
-        out_ids = gen[i, pad_prompt_len:]  # ✅ 正确：去掉 pad+prompt
+        out_ids = gen[i, pad_prompt_len:]  #  正确：去掉 pad+prompt
         txt = tokenizer.decode(out_ids, skip_special_tokens=True).strip()
         outs.append(txt)
     return outs
@@ -501,7 +501,7 @@ def local_generate_json(
     model_name: str,
     max_new_tokens: int = 256,
     temperature: float = 0.0,
-    max_input_tokens: Optional[int] = None,   # ✅新增
+    max_input_tokens: Optional[int] = None,   # 新增
 ) -> str:
     messages = [
         {"role": "system", "content": system_prompt},
@@ -516,7 +516,7 @@ def local_generate_json(
         model_name=model_name
     )
 
-    # ✅用 max_input_tokens 控制截断，而不是 tokenizer.model_max_length
+    # 用 max_input_tokens 控制截断，而不是 tokenizer.model_max_length
     if max_input_tokens is None:
         max_input_tokens = tokenizer.model_max_length
 
@@ -692,7 +692,7 @@ def run_inference(
                     user_prompt_info["output_file_root_path"] = output_file_root_path
                     user_prompt_info["output_completed_file_root_path"] = output_completed_file_root_path
 
-                    # ✅ 下面这些用于“可选 MapReduce”
+                    #  下面这些用于“可选 MapReduce”
                     user_prompt_info["payload"] = payload
                     user_prompt_info["prompt_variant"] = prompt_variant
                     user_prompt_info[

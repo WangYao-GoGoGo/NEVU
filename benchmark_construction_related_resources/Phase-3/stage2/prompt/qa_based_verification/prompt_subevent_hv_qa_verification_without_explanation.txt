@@ -1,0 +1,151 @@
+**[Task Description:]**
+You are given a list of subevents extracted from factual news articles. For each subevent, a set of value-based QA questions has been generated based on previously predicted human value labels. Each value label is categorized as either:
+    * aligned_with_human_values: the actor's behavior is thought to reflect or uphold a given human value.
+    * contradictory_to_human_values: the actor's behavior is thought to violate or go against a given human value.
+Each question asks whether a specific actor in a subevent demonstrates (or contradicts) a specific human value, based on the article content and subevent context.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
+Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+This whole task comprises the following subtasks:
+[Subtask: Human Value Label Verification]
+    Goal: The task is to evaluate the appropriateness of each human value label with respect to the subevent and make a binary judgment:
+    Instructions:
+        1. Please answer the question field for each entry in the provided JSON using "yes" or "no", and briefly justify your answer in 1–2 sentences based on evidence from the article.
+            * yes — if the value label is correctly assigned (i.e., the subevent truly reflects or contradicts the value as claimed)
+            * no — if the value label is incorrectly assigned (i.e., the subevent does not meaningfully reflect or contradict the value)
+        2. For each value label, please also provide a brief explanation to justify your answer based on the content and implications of the subevent.
+        3. Be specific and focus on the actions, intentions, or consequences described in the subevent that relate to the human value in question.
+    Output:
+        1. "id": **copied directly from the input** (do not change or regenerate).
+        2. "actor" and "human_value_label": **copied directly from the input** (do not change or generate).
+        3. "answer": "yes" or "no".
+        4. "explanation": Justification for yes or no.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article Time:]**
+[Article_time]
+
+**[Article:]**
+[Article_value]
+
+**[Human Value Definitions:]**
+[Human_value_definitions]
+
+**[Subevents-based Verification Questions:]**
+[subevents_verification_questions]
+
+**[Output Format Example:]**
+{
+    "verified_results": [
+        {
+            "subevent_id": "0",
+            "aligned_with_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor1",
+                    "human_value_label": "label2",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ],
+            "contradictory_to_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label3",
+                    "answer": "yes",
+                    "explanation": "Justification for yes.."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label1",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ]
+        },
+        {
+            "subevent_id": "1",
+            "aligned_with_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label1",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ],
+            "contradictory_to_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor3",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label2",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ]
+        }
+    ]
+}
+
+**[Answer Guidelines with Examples:]**
+Please refer to the following examples and conditions to guide your "yes"/"no" decisions:
+For aligned_with_human_values labels:
+    * Answer "yes" when:
+        The actor's behavior or intention in the subevent clearly demonstrates or supports the given human value.
+        The value label can be reasonably inferred from what the actor does, causes, or symbolizes in the subevent.
+        Example: A politician helping refugees settle with adequate housing resources → "Be helpful" → yes.
+    * Answer "no" when:
+        The actor's actions in the subevent do not support the value, or the connection to the value is unclear or weak.
+        The value label is applied to the wrong actor or lacks evidence in the subevent.
+        Example: A protest is carried out by citizens, but the QA assigns the human value label "Be responsible" to government officials, even though the subevent does not mention any actions or responses from the government officials → Answer: no
+For contradictory_to_human_values labels:
+    * Answer "yes" when:
+        The subevent shows the actor violating, neglecting, or acting in opposition to the human value.
+        There is explicit or strongly implied contradiction between the actor’s behavior and the value.
+        Example: A corporation knowingly dumping toxic waste is labeled as contradicting "Be protecting the environment" → yes.
+    * Answer "no" when:
+        The actor actually supports the value or behaves neutrally in relation to it.
+        There is no clear evidence that the actor's behavior contradicts the value.
+        Example: A teacher strictly enforcing classroom rules is labeled as contradicting "Be respectful" with no evidence of disrespect → no.
+These rules aim to ensure each label is grounded in what the subevent actually describes, maintaining coherence between actor, value, and justification.
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+    2. JSON comments (//) are strictly forbidden.
+    3. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    4. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    5. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    6. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    7. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    8. Use double quotes for all JSON keys and string values (e.g., "key": "value").

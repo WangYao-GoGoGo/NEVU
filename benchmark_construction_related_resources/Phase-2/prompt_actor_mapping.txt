@@ -1,0 +1,151 @@
+[Task Description:]
+* The goal of this task is to determine, for each sentence in the provided list [entire_article_sentences:], how strongly it relates to each of the abstract actors in the [Actors:] list, and to map those actors—if relevant—to the exact entity mentions that appear verbatim in that sentence.
+* Each actor represents a higher-level social group or conceptual role (e.g., "The U.S. government", "Environmental activists", "Tech companies"), which must be grounded to concrete entity mentions (e.g., "White House", "Joe Biden", "Google") that actually occur in the sentence.
+* All mappings must preserve the exact text form (including case, punctuation, and spacing) of the entities as they appear in the sentence.
+* You must not generate, rephrase, or modify any actor name; use only the actor strings provided in [Actors:].
+* Each sentence should be evaluated independently, while allowing minimal local context (±1 neighboring sentence) only when necessary to resolve short pronouns or referential mentions.
+
+[Requirements:]
+1. Actor-wise Sentence Relevance Evaluation
+    * For each actor–sentence pair, determine the relevance level:
+        * yes → the sentence explicitly or clearly involves this actor.
+        * partial → the sentence weakly or indirectly involves this actor, or only mentions part of the actor’s referential expressions.
+        * no → the sentence is unrelated to this actor.
+    * The confidence score must reflect the degree of positive relevance between the actor and the sentence.
+    * Higher confidence means stronger evidence that the actor is involved or represented in the sentence ("yes" or "partial").
+    * Lower confidence means stronger evidence that the actor is not related to the sentence ("no").
+    * In general, confidence(yes) > confidence(partial) > confidence(no).
+    * Provide a confidence score between 0.00e+00–1.00e+00 (scientific notation).
+    * If the relevance is yes or partial, you must map the actor to the corresponding entity mentions in that sentence.
+    * If the relevance is no, mapping_entities should be an empty list.
+2. Completeness (must-cover)
+    * Every sentence from the input must appear in the output with its corresponding sentence_id.
+    * Every actor from [Actors:] must appear in the actors list for each sentence, even if the relevance is "no".
+    * No actor or sentence may be omitted.
+3. Precision (exact surface alignment)
+    * Only map to entities or mentions that explicitly occur in the sentence text.
+    * The entity string must match exactly as it appears—no rewording, abbreviation, or case change.
+    * Do not include inferred, implied, or generalized entities.
+4. Pronoun and Implicit Reference Handling
+    * If the sentence has no explicit named entities referring to the actor, you may map the actor to relevant pronouns or short role phrases (e.g., "I", "we", "they", "the spokesperson", "the official").
+    * If both explicit entities and pronouns exist, prefer explicit named entities.
+    * If pronouns and entities co-occur and clearly co-refer, you may include both, with explicit entities listed first.
+    * If multiple pronouns could ambiguously refer to different actors, exclude all ambiguous pronouns.
+5. One-to-many allowed but constrained
+    * A single actor may correspond to multiple mentions within a sentence (e.g., "The U.S. government" → "White House", "President Biden").
+    * Keep mapping_entities concise—include only entities that clearly represent or act on behalf of the actor.
+    * Avoid more than 3–4 entities per actor per sentence unless strongly justified.
+6. No hallucination
+    * Use only entity strings actually present in the sentence.
+    * Do not invent, modify, or re-generate any actor names or entity mentions.
+    * Do not include entities inferred from general world knowledge or context outside the article.
+5. Entity reference format
+    * Use the exact surface string as it appears in the sentence.
+    * Do not modify capitalization, punctuation, or spacing.
+    * Each entry in mapping_entities must be unique.
+
+[Entire_Aritlces:]
+{"entire_article_sentences": [Sentence_list_value]}
+
+[Actors:]
+{"actors": [Actor_Value]}
+
+**[Actor Alignment Rules:]**
+1. Exact factual grounding
+    * Each mapped entity must appear verbatim in the sentence and refer to the same actor concept as defined in [Actors:].
+    * The actor field must exactly match the actor name in [Actors:], without rewriting or abbreviation.
+2. Granularity constraint
+    * Prefer specific entities (proper names, organizations) over generic or ambiguous terms.
+    * Only use generic references (like "the company" or "the government") if no specific entity exists.
+3. Pronoun disambiguation rule
+    * Include pronouns only if their referent is unambiguous within the sentence or immediate context (±1 sentence).
+    * If uncertain, exclude the pronoun rather than risk misattribution.
+4. Non-overlap rule
+    * Do not map the same entity to multiple actors unless the article clearly supports shared reference.
+5. Compactness rule
+    * Keep mappings concise and accurate. In most cases, 1–2 entities per actor per sentence are sufficient. However, if a sentence naturally contains multiple distinct mentions of the same actor (e.g., both a person and their institution, or repeated co-referential mentions), include all of them to preserve factual completeness.
+Avoid excessive or tangential mappings that do not directly represent the actor.
+6. Confidence threshold (internal reasoning)
+    * Assign "yes" or "partial" relevance only if confidence ≥ 0.7.
+    * Weak, uncertain, or contextually vague mentions default to "no".
+7. Sentence reference format
+    * Use the "sentence_id" field exactly as it appears in the [entire_article_sentences:] list.
+    * Do not map to items labeled as "heading" or "summary".
+
+**[Output Formatting Rules (for strict JSON):]**
+    * The output must be a valid JSON object following the exact schema below.
+    * Do not include explanations, additional text, markdown code fences (```json), or commentary.
+    * All strings (keys and values) must be enclosed in double quotes.
+    * No trailing commas are allowed.
+    * The output must be a single valid JSON object that is fully closed with matching braces and brackets.
+    * The top-level key must be "mapping_results".
+    * The JSON must end with exactly:]}
+    * Do not stop generation until the closing ]} is produced.
+    * Do not include ellipses, comments, or incomplete structures.
+{
+  "mapping_results": [
+    {
+      "sentence_id": "string",
+      "actors": [
+        {
+          "actor": "string",
+          "mapping_entities": ["string", "..."],
+          "relevance": "yes | partial | no",
+          "confidence": "string (0.00e+00–1.00e+00)"
+        }
+      ]
+    }
+  ]
+}
+
+**[Output Format Example:]**
+Return the result in the following JSON format:
+{
+  "mapping_results": [
+        {
+          "sentence_id": "0",
+          "actors": [
+            {
+              "actor": "The U.S. government",
+              "mapping_entities": ["White House", "Joe Biden"],
+              "relevance": "yes",
+              "confidence": "9.35e-01"
+            },
+            {
+              "actor": "Environmental activists",
+              "mapping_entities": ["they"],
+              "relevance": "yes",
+              "confidence": "8.80e-01"
+            }
+          ]
+        },
+        {
+          "sentence_id": "1",
+          "actors": [
+            {
+              "actor": "The U.S. government",
+              "mapping_entities": [],
+              "relevance": "no",
+              "confidence": "2.10e-01"
+            },
+            {
+              "actor": "Environmental activists",
+              "mapping_entities": [],
+              "relevance": "no",
+              "confidence": "1.80e-01"
+            }
+          ]
+        },
+        {
+          "sentence_id": "2",
+          "actors": [
+            {
+              "actor": "Tech companies",
+              "mapping_entities": ["Google"],
+              "relevance": "partial",
+              "confidence": "6.20e-01"
+            }
+          ]
+        }
+    ]
+}

@@ -1,0 +1,156 @@
+**[Task Description:]**
+You are given a set of story narratives constructed from factual news articles. Each story narrative is composed of a sequence of subevents describing a thematically or temporally coherent storyline.
+For each story narrative, a set of value-based QA questions has been generated based on previously predicted human value labels. Each value label is categorized as either:
+    * aligned_with_human_values: the actor's behavior is thought to reflect or uphold a given human value.
+    * contradictory_to_human_values: the actor's behavior is thought to violate or go against a given human value.
+Each question asks whether a specific actor in a story narrative demonstrates (or contradicts) a specific human value, and with a short definition of the value provided.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
+Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Story Narrative: A story narrative is a higher-level unit of meaning composed of multiple logically or thematically related subevents. Each story narrative reflects a continuous storyline or conceptual arc that helps connect and contextualize the subevents into a coherent interpretive frame.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+This whole task comprises the following subtasks:
+[Subtask: Human Value Label Verification]
+    Goal: The task is to evaluate the appropriateness of each human value label with respect to the story narrative and make a binary judgment:
+    Instructions:
+        1. Please answer the question field for each entry in the provided JSON using "yes" or "no", and briefly justify your answer in 1–2 sentences based on evidence from the story narrative (not just a single subevent).
+            * yes — if the value label is correctly assigned (i.e., the story narrative as a whole truly reflects or contradicts the value as claimed)
+            * no — if the value label is incorrectly assigned (i.e., the story narrative does not meaningfully reflect or contradict the value)
+        2. For each value label, please also provide a brief explanation to justify your answer based on the integrated narrative meaning and implications across the subevents.
+        3. Be specific and focus on the sequence of actions, intentions, or outcomes across the entire narrative, not just isolated behaviors from one subevent.
+    Output:
+        1. "id": **copied directly from the input** (do not change or regenerate).
+        2. "actor" and "human_value_label": **copied directly from the input** (do not change or generate).
+        3. "answer": "yes" or "no".
+        4. "explanation": Justification for yes or no.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article Time:]**
+[Article_time]
+
+**[Article:]**
+[Article_value]
+
+**[Human Value Definitions:]**
+[Human_value_definitions]
+
+**[Story narrative-based Verification Questions:]**
+[story_narrative_verification_questions]
+
+**[Output Format Example:]**
+{
+    "verified_results": [
+        {
+            "story_narrative_id": "0",
+            "aligned_with_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor1",
+                    "human_value_label": "label2",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ],
+            "contradictory_to_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label3",
+                    "answer": "yes",
+                    "explanation": "Justification for yes.."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label1",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ]
+        },
+        {
+            "story_narrative_id": "1",
+            "aligned_with_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label1",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ],
+            "contradictory_to_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor3",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label2",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ]
+        }
+    ]
+}
+
+**[Answer Guidelines with Examples:]**
+Please refer to the following examples and conditions to guide your "yes"/"no" decisions for story narrative-level human value labels:
+For aligned_with_human_values labels:
+    * Answer "yes" when:
+        The actor’s behavior, decisions, or expressed intentions across the story narrative consistently reflect the given human value.
+        The human value can be reasonably inferred by integrating the actor’s actions and consequences across multiple subevents.
+        The overall structure and coherence of the story narrative support the presence of the value for the specified actor.
+        Example: Across several subevents, ordinary Moroccan and Algerian people are depicted synchronizing their prayers, feeling united across a closed border, and expressing spiritual solidarity → labeled as "Be holding religious faith" → Answer: yes
+    * Answer "no" when:
+        The actor’s actions across the narrative do not clearly demonstrate or consistently support the claimed value.
+        The value assignment is disconnected from the actual role or behavior of the actor within the narrative.
+        The actor is marginal to the narrative or has no meaningful engagement with the value in question.
+        Example: The narrative focuses on the author's internal reflection about the border, but assigns the label "Be responsible" to civil society actors, even though they are not portrayed taking action → Answer: no
+For contradictory_to_human_values labels:
+    * Answer "yes" when:
+        The actor’s behavior across the narrative violates, dismisses, or undermines the specified human value.
+        The contradiction is evident through a pattern of neglect, harm, or disregard of the value across multiple subevents.
+        Example: If a group of tourists repeatedly ignores cultural restrictions and climbs a sacred site despite warnings from Indigenous communities across multiple scenes → labeled as contradicting "Be respectful" → Answer: yes
+    * Answer "no" when:
+        The actor is portrayed as supporting the value, or their actions are neutral with respect to the value.
+        The contradiction appears in isolated details but is outweighed by value-aligned behavior in the overall narrative.
+        The actor has no significant presence in the narrative or is not linked to the value dimension.
+        Example: The narrative discusses border control policies, but labels local residents as contradicting "Be broadminded" even though they are portrayed as empathetic and culturally open throughout → Answer: no
+These rules aim to ensure that each human value label is evaluated in the context of the entire story narrative, with attention to coherence across actors, values, and multi-subevent expressions.
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+    2. JSON comments (//) are strictly forbidden.
+    3. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    4. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    5. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    6. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    7. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    8. Use double quotes for all JSON keys and string values (e.g., "key": "value").

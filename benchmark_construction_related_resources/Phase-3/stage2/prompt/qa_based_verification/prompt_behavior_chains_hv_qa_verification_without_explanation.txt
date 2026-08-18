@@ -1,0 +1,154 @@
+**[Task Description:]**
+You are given a set of behavior chains extracted from factual news articles. Each behavior chain is composed of a sequence of thematically or causally connected actions that span across multiple subevents.
+For each behavior chain, a set of value-based QA questions has been generated based on previously predicted human value labels. Each value label is categorized as either:
+    * aligned_with_human_values: the actor's behavior is thought to reflect or uphold a given human value.
+    * contradictory_to_human_values: the actor's behavior is thought to violate or go against a given human value.
+Each question asks whether a specific actor in a behavior chain demonstrates (or contradicts) a specific human value, based on the behavior chain’s actions and the provided value definition.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
+Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
+Behavior Chain: A behavior chain is a semantically or causally linked sequence of actions that together express a coherent behavioral pattern or goal. These actions span across multiple subevents and, taken as a whole, reflect meaningful intentions, progressions, or outcomes involving one or more actors.
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the behavior chain through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+This whole task comprises the following subtasks:
+[Subtask: Human Value Label Verification]
+    Goal: The task is to evaluate the appropriateness of each human value label with respect to the behavior chain and make a binary judgment:
+    Instructions:
+        1. Please answer the question field for each entry in the provided JSON using "yes" or "no", and briefly justify your answer in 1–2 sentences based on evidence from the article and the entire behavior chain.
+            * yes —  if the value label is correctly assigned (i.e., the behavior chain as a whole truly reflects or contradicts the value as claimed)
+            * no — if the value label is incorrectly assigned (i.e., the behavior chain does not meaningfully reflect or contradict the value)
+        2. For each value label, please also provide a brief explanation to justify your answer based on the sequence and logic of actions within the chain.
+        3. Be specific and focus on the progression of behaviors, intentions, or consequences across the entire chain, not just individual subevent segments.
+    Output:
+        1. "behavior_ids_chains" and "id": **copied directly from the input** (do not change or regenerate).
+        2. "actor" and "human_value_label": **copied directly from the input** (do not change or generate).
+        3. "answer": "yes" or "no".
+        4. "explanation": Justification for yes or no.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article Time:]**
+[Article_time]
+
+**[Article:]**
+[Article_value]
+
+**[Human Value Definitions:]**
+[Human_value_definitions]
+
+**[Behavior chains-based Verification Questions:]**
+[behavior_chains_verification_questions]
+
+**[Output Format Example:]**
+{
+    "verified_results": [
+        {
+            "behavior_ids_chains": ["0", "1"],
+            "aligned_with_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor1",
+                    "human_value_label": "label2",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ],
+            "contradictory_to_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label3",
+                    "answer": "yes",
+                    "explanation": "Justification for yes.."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label1",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ]
+        },
+        {
+            "behavior_ids_chains": ["2", "3"],
+            "aligned_with_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor1",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label1",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ],
+            "contradictory_to_human_values": [
+                {
+                    "id": "0",
+                    "actor": "actor3",
+                    "human_value_label": "label1",
+                    "answer": "yes",
+                    "explanation": "Justification for yes."
+                },
+                {
+                    "id": "1",
+                    "actor": "actor2",
+                    "human_value_label": "label2",
+                    "answer": "no",
+                    "explanation": "Justification for no."
+                }
+            ]
+        }
+    ]
+}
+
+**[Answer Guidelines with Examples:]**
+Please refer to the following examples and conditions to guide your "yes"/"no" decisions for behavior chain-level human value labels:
+For aligned_with_human_values labels:
+    * Answer "yes" when:
+        The actor's behavior or intention in the chain clearly supports the given human value.
+        The value can be reasonably inferred from the combined actions, intentions, or consequences across the behavior chain.
+        Example: A series of actions by Catholic Church Leadership, including appointing women, giving them voting rights, and advocating for their inclusion in decision-making, collectively demonstrate openness and change → labeled as "Be broadminded" → Answer: yes
+    * Answer "no" when:
+        The actor’s behaviors across the chain do not consistently or clearly reflect the human value.
+        The actor is mentioned but plays only a minor or passive role, or is not central to the behavioral sequence.
+        The assigned human value cannot be reasonably linked to the actual behaviors presented in the chain.
+        Example: The chain highlights steps by women’s advocacy groups, but the label “Be responsible” is incorrectly applied to male clergy, who play no active role in the chain → Answer: no
+For contradictory_to_human_values labels:
+    * Answer "yes" when:
+        The actor’s behavior in the chain clearly violates or stands in opposition to the given human value.
+        There is a pattern or culmination of harmful, dismissive, or exclusionary actions that contradict the value.
+        Example: A company repeatedly denies environmental concerns, ignores public outcry, and expands harmful practices → labeled as contradicting "Be protecting the environment" → Answer: yes
+    * Answer "no" when:
+        The actor’s actions across the chain do not conflict with the human value, or may even support it.
+        The label is based on a single ambiguous action that is outweighed by neutral or value-aligned behavior in the rest of the chain.
+        Example: A teacher's actions across several scenes focus on student empowerment and fairness, but the chain is labeled as contradicting "Have equality" based on a single policy mention without context → Answer: no
+These rules aim to ensure each label is grounded in the overall behavioral pattern and coherence of the chain, maintaining consistency between actor, human value, and sequential action interpretation.
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+    2. JSON comments (//) are strictly forbidden.
+    3. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    4. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    5. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    6. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    7. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    8. Use double quotes for all JSON keys and string values (e.g., "key": "value").

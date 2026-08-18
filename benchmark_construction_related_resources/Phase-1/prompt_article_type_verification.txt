@@ -1,0 +1,133 @@
+**[Task Description:]**
+You are given a factual or semi-factual news article as a single document unit. For each article, two classification subtasks are performed: [Subtask 1: Article Type Classification & Suitability] and [Subtask 2: Sensitive Content Detection & Suitability]
+
+**[Key Concepts:]**
+Human Value: A socially recognized moral or ethical principle reflected in the behavior of actors. Values can be expressed as aligned_with_human_values (upholding values such as fairness, compassion, justice) or contradictory_to_human_values (violating or undermining such values).
+Sensitive Content: Content related to nation-states, political regimes, wars, or geopolitical conflicts, where commentary on values may pose legal or ethical risks.
+
+[Subtask: Article Type Classification & Suitability]
+    Goal: Classify the article into a type (hard_news, feature_investigative, profile_biography, interview_QA, opinion_editorial, analysis_explainer, soft_news, lifestyle_culture, review_criticism, satire_humor, science_technology, other_misc), and decide whether it is suitable for human value research based on actors, subevents, behavior chains, and story narratives.
+    Suitability criteria (binary):
+        1. Yes: The article clearly contains identifiable actors (individuals, groups, organizations, governments) and events/actions that can be structured into subevents, behavior chains, or narratives.
+        2. No: The article is mainly abstract discussion of ideas, argumentative commentary, pure opinion/editorial without factual grounding, lifestyle/review content, or humor/satire, with little or no extractable actor–event structure.
+        3. If the article is purely argumentative, abstract discussion, or theoretical commentary without concrete actors or actions, mark suitable_for_actor_value_research = No.
+    Output:
+        1. article_type: The type of article (choose from the [News Type:]).
+        2. suitable_for_actor_value_research: Whether the article is suitable for actor–value research (Yes/No).
+        3. rationale: Short explanation of the classification and suitability decision.
+
+[Subtask: Sensitive Content Detection & Suitability]
+    Goal: For each article, the system should generate sensitive labels (zero, one, or multiple) and then give a binary answer to:
+    "Is this article suitable for human value research based on actors, subevents, behavior chains, and story narratives?"
+        1. Yes → No sensitive categories detected (safe to include in human value research).
+        2. No → Sensitive categories detected. Any presence of these categories makes the article not suitable for human value research.
+    Output:
+        1. sensitive_categories: List of detected sensitive content categories.
+        2. suitable_for_value_research: Whether the article is still suitable for value research despite sensitivity (Yes/No).
+        3. rationale: Short explanation of the sensitivity assessment and decision.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article:]**
+[Article_value]
+
+**[News Type:]**
+{
+  "suitable_for_human_value_research": [
+    "hard_news",
+    "feature_investigative",
+    "profile_biography",
+    "interview_QA",
+    "analysis_explainer",
+    "soft_news",
+    "science_technology (event-driven)"
+  ],
+  "not_suitable_for_human_value_research": [
+    "opinion_editorial",
+    "review_criticism",
+    "satire_humor",
+    "lifestyle_culture",
+    "science_technology (theoretical_speculative)",
+    "other_misc"
+  ]
+}
+
+**[Output Format Example:]**
+{
+    article_type_classification_results": {
+        "article_type": "News Type",
+        "suitable_for_actor_value_research": "Yes | No",
+        "rationale": "string"
+    },
+    "sensitive_detection_results": {
+      "sensitive_categories": ["sensitive content categories"],
+      "suitable_for_value_research": "Yes | No",
+      "rationale": "string"
+    }
+}
+
+**[Answer Guidelines with Examples:]**
+[Rules for Subtask: Article Type Classification & Suitability]
+1. Article Types (NOT suitable for human value research: No):
+    Any content that lacks identifiable actors, concrete events, or structured actions should be excluded:
+    If an article falls into any of the following categories, it should be labeled accordingly, and the article must be judged "Not suitable for human value research (No)":
+    1.1 Opinion / Editorial
+        Abstract arguments or political/social commentary without concrete events or actions.
+    1.2 Review / Criticism
+        Evaluations of books, films, art, or products, lacking real-world actor behaviors.
+    1.3 Satire / Humor
+        Parody or humorous writing not based on factual events.
+    1.4 Lifestyle / Culture
+        When content is descriptive, advisory, or trend-based without concrete actors/events (e.g., “10 ways to sleep better”).
+    1.5 Science / Technology
+        When content is purely theoretical, speculative, or trend-based (e.g., “How quantum computing works”), without actor involvement.
+    1.6 Other / Miscellaneous
+        Articles that are unclear, trivial, or unrelated to factual events (e.g., horoscopes, random musings).
+
+2. Article Types (suitable for human value research: Yes):
+    Articles may include sensitive or controversial issues as long as they provide identifiable actors and extractable events or actions:
+    2.1 Hard News
+        Reports of factual, time-specific events with clear actors.
+    2.2 Feature / Investigation
+        In-depth narratives describing events, actors, and their actions over time.
+    2.3 Profile / Biography
+        Narratives centered on an individual or group, describing their actions, choices, and consequences.
+    2.4 Interview / Q&A
+        When the interview responses describe concrete actions, decisions, or positions tied to events.
+    2.5 Analysis / Explainer
+        If grounded in factual events, explaining actors’ motives, actions, and outcomes.
+    2.6 Soft News
+        Community, entertainment, or human-interest stories involving real actors and activities (e.g., local events, charity actions).
+    2.7 Science / Technology
+        When reporting real-world actions by scientists, companies, or institutions (e.g., developing a vaccine, launching a satellite).
+
+[Rules for Subtask: Sensitive Content Detection & Suitability]
+    1. Sensitive Categories (NOT allowed):
+        Any content involving nation-states, political regimes, or geopolitical conflict should be excluded:
+        1. If an article falls into any of the following categories, it should be labeled accordingly, and the article must be judged "Not suitable for human value research (No)":
+        1.1 Armed Conflict / War
+            Military invasions, wars, insurgencies, civil wars.
+        1.2 Economic Sanctions
+            State-imposed sanctions, trade wars.
+        1.3 Political Regime Sensitive
+            Content explicitly tied to legitimacy of governments, elections, coups, or regime stability.
+        1.4 China Sensitive
+            Mainland China political sensitivities (Chinese Communist Party (CCP), Speeches, reports, or official statements by the President or top leadership, Tibet issues, Xinjiang issues, Hong Kong protests and pro-democracy movements, Taiwan sovereignty and independence/unification debates, Direct discussion or criticism of regime legitimacy, ideology, or policy direction etc.).
+        1.5 Extremism / Terrorism (State-Linked)
+            When tied to state warfare, insurgent movements, or ideological regimes.
+        1.6 Hate Speech (State-Level / Political Regime Related)
+            Government-led propaganda, ethnic cleansing narratives, or war-related hate campaigns.
+
+    2. Articles may include sensitive or controversial topics as long as they are not directly tied to state regimes or international conflicts:
+        2.1 Social Issues
+            Education, healthcare, climate change, immigration (case-level, not national policy disputes).
+        2.2 Crime & Law
+            Murder, corruption, fraud, terrorism/terror attacks (as specific criminal events, not state warfare).
+        2.3 Business & Ethics
+            Corporate fraud, labor rights, consumerism, ethical dilemmas.
+        2.4 Culture & Lifestyle
+            Family, relationships, personal choices, work/leisure.
+        2.5 Hate Speech (Societal Level)
+            Discrimination, bullying, racism, sexism, online hate speech.
+            Allowed if studied as social or interpersonal phenomenon (e.g., school bullying, online harassment).

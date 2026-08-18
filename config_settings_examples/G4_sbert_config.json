@@ -1,0 +1,107 @@
+DEBUG = True
+    if DEBUG:
+        DEBUG_G4_METHOD = "sbert"  # "tfidf" or "sbert"
+
+        COMMON_ARGS = [
+            "--mode", "infer",
+            "--group", "G4",
+
+            # G4 不用真正的 LLM model_name，但为了输出目录清楚，给一个名字
+            "--model_name", f"g4-{DEBUG_G4_METHOD}-retrieval",
+
+            "--label_space", "L1",
+            "--prompt_variant", "A",
+
+            # G4 do not use these parameters
+            "--epochs", "1",
+            "--lr", "2e-4",
+            "--batch_size", "1",
+            "--grad_accum", "8",
+            "--max_len", "4096",
+            "--max_new_tokens", "128",
+
+            "--train_event",
+            "dataset/training_dataset_total_formatted.json",
+            "--train_hv",
+            "dataset/train_sub_gold.json",
+            "--dev_event",
+            "dataset/dev_dataset_total_formatted.json",
+            "--dev_hv",
+            "dataset/dev_sub_gold.json",
+            "--test_event",
+            "dataset/test_dataset_total_formatted.json",
+            "--test_hv",
+            "dataset/test_sub_gold.json",
+
+            # G4 不用 prompt，但保留路径也没问题
+            "--canonical_prompt", "prompt/canonical_prompt.txt",
+            "--canonical_system", "prompt/canonical_system.txt",
+
+            "--hv1_label_dir", "dataset/hv/id2hv.json",
+            "--hv_label_dir", "dataset/hv/values.json",
+            "--l1tol2_mappings", "dataset/hv/l1tol2_id_mapping.json",
+
+            # full run
+            "--sample_train_n", "99999999",
+            "--sample_dev_n", "99999999",
+            "--sample_test_n", "99999999",
+            "--sample_seed", "42",
+
+            # 固定输出目录，避免时间戳覆盖你手写 pred_out/report_out
+            "--use_timestamp", "0",
+
+            # G4 统一输出根目录
+            "--out_dir",
+            f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval",
+
+            "--pred_out",
+            f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval/test_pred.json",
+            "--report_out",
+            f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval/test_report.json",
+
+            "--pred_out_dev",
+            f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval/dev_pred.json",
+            "--report_out_dev",
+            f"results/G4/outputs/{DEBUG_G4_METHOD}_retrieval/dev_report.json",
+
+            # G4 参数
+            "--retrieval_method", DEBUG_G4_METHOD,
+            "--retrieval_k", "5",
+            "--retrieval_vote_threshold", "0.3",
+            "--retrieval_min_sim", "0.0",
+            "--retrieval_level_filter", "true",
+            "--retrieval_conflict_mode", "prefer_higher",
+
+            # 不限制输出标签数量。后面如果 precision 太低，可以再加 top_m
+            "--retrieval_top_m_aligned", "0",
+            "--retrieval_top_m_contra", "0",
+
+            # 每个字段最多保留字符数
+            "--retrieval_max_chars_per_field", "6000",
+
+            # article-level 默认不直接加入全文，避免 article 太长导致检索噪声
+            "--retrieval_include_article_content", "false",
+        ]
+
+        if DEBUG_G4_METHOD == "tfidf":
+            sys.argv = [sys.argv[0]] + COMMON_ARGS + [
+                "--gpu_ids", "0",
+                "--device_map", "single",
+
+                "--tfidf_ngram_max", "2",
+                "--tfidf_min_df", "2",
+                "--tfidf_max_df", "0.95",
+                "--tfidf_max_features", "200000",
+            ]
+
+        elif DEBUG_G4_METHOD == "sbert":
+            sys.argv = [sys.argv[0]] + COMMON_ARGS + [
+                "--gpu_ids", "1",
+                "--device_map", "single",
+
+                "--sbert_model_name", "sentence-transformers/all-mpnet-base-v2",
+                "--sbert_batch_size", "32",
+                "--sbert_device", "cuda",
+
+                # "--sbert_cache_folder", "/home/iiserver32/.cache/huggingface",
+            ]

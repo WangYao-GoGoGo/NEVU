@@ -1,78 +1,17 @@
 {
   "schema": {
-    "version": "1.0",
-    "description": "Mapping from original 12 genre types (L2) to merged 6 buckets (L1) for News-Domain texts.",
-    "levels": {
-      "L1": [
-        "hard_factual_reporting",
-        "deep_factual_narrative",
-        "attribution_heavy_discourse",
-        "explainer_analysis",
-        "soft_lifestyle_consumer",
-        "non_fact_based_stress_test"
-      ],
-      "L2": [
-        "hard_news",
-        "feature_investigative",
-        "profile_biography",
-        "interview_QA",
-        "opinion_editorial",
-        "analysis_explainer",
-        "soft_news",
-        "lifestyle_culture",
-        "review_criticism",
-        "satire_humor",
-        "science_technology",
-        "other_misc"
-      ]
-    }
+    "description": "A compact and annotation-stable news genre taxonomy containing ten genre categories for news-domain texts."
   },
-  "L1_definitions": {
-    "hard_factual_reporting": "Straight factual reporting centered on concrete events (who did what, when/where), typically with clear actors and attributable actions.",
-    "deep_factual_narrative": "Narrative-driven but still fact-grounded reporting (investigations, profiles/biographies), often longer-form with richer context and implied values.",
-    "attribution_heavy_discourse": "Texts organized around explicit attributions (Q&A, interviews, quoted statements), where actor stances are expressed via direct speech.",
-    "explainer_analysis": "Explainers and analyses that synthesize facts with interpretation, background, or causal reasoning (including many science/tech explainers).",
-    "soft_lifestyle_consumer": "Soft/consumer-oriented content (lifestyle, culture, reviews) where actions and actors may be weaker or more implicit; values may be personal/experiential.",
-    "non_fact_based_stress_test": "Out-of-scope or stress-test content with stronger rhetoric, persuasion, or humor/satire; also includes miscellaneous/noisy items."
-  },
-  "mapping_L1_to_L2": {
-    "hard_factual_reporting": [
-      "hard_news"
-    ],
-    "deep_factual_narrative": [
-      "feature_investigative",
-      "profile_biography"
-    ],
-    "attribution_heavy_discourse": [
-      "interview_QA"
-    ],
-    "explainer_analysis": [
-      "analysis_explainer",
-      "science_technology"
-    ],
-    "soft_lifestyle_consumer": [
-      "soft_news",
-      "lifestyle_culture",
-      "review_criticism"
-    ],
-    "non_fact_based_stress_test": [
-      "opinion_editorial",
-      "satire_humor",
-      "other_misc"
-    ]
-  },
-  "mapping_L2_to_L1": {
-    "hard_news": "hard_factual_reporting",
-    "feature_investigative": "deep_factual_narrative",
-    "profile_biography": "deep_factual_narrative",
-    "interview_QA": "attribution_heavy_discourse",
-    "analysis_explainer": "explainer_analysis",
-    "science_technology": "explainer_analysis",
-    "soft_news": "soft_lifestyle_consumer",
-    "lifestyle_culture": "soft_lifestyle_consumer",
-    "review_criticism": "soft_lifestyle_consumer",
-    "opinion_editorial": "non_fact_based_stress_test",
-    "satire_humor": "non_fact_based_stress_test",
-    "other_misc": "non_fact_based_stress_test"
+  "genre_definitions": {
+    "Current": "Time-sensitive reporting focused on recent or ongoing events, including straight news and current-event reporting.",
+    "Feature": "Longer-form, narrative, human-interest, lifestyle, or cultural reporting that is not primarily driven by immediate timeliness.",
+    "Special_Report": "In-depth or investigative reporting requiring extensive research and evidence gathering, often presenting a deep examination of a specific subject.",
+    "Attribution_QA": "Interview content presented primarily through explicit attribution, especially in a question-and-answer structure or direct quoted exchanges.",
+    "Opinion": "Authorial viewpoint or editorial content intended to express persuasion, normative judgment, commentary, or advocacy.",
+    "Background_Analysis": "Explainer or analytical content that provides background, synthesis, interpretation, contextualization, or causal reasoning.",
+    "Profile_Biography": "Person-centered reporting describing the life, background, experiences, or activities of an individual based on facts, research, and/or interviews.",
+    "Review": "Critical or evaluative content concerning creative works, services, products, performances, or consumer experiences.",
+    "Satire": "Content using humor, irony, parody, or exaggeration for satirical purposes and not intended to be interpreted as literal factual reporting.",
+    "Unspecified": "Fallback category for noisy, mixed, ambiguous, or out-of-scope items that cannot be reliably assigned to another genre."
   }
 }

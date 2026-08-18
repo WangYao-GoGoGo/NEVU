@@ -1,0 +1,308 @@
+**[Task description]**
+This task consists of five subtasks, aiming to perform multi-level human value evaluation based on previously extracted event data from the provided [Article:]. Specifically, it involves analyzing human values at the article, subevent, behavior chain, and story narrative levels.
+Please consolidate the outputs from all subtasks into a single, complete JSON structure, ensuring the output format adheres to the following example: [Example: output format]
+Note: You must only classify values under the actors provided in [Human Value-based Actors:]. Do not infer or introduce any new actors.
+
+**[Key Concepts:]**
+Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
+Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
+Behavior: Subject behavior is the core element within a subevent, referring to the series of activities performed by each participating subject (such as an individual or group). Through these behaviors, subjects demonstrate their specific actions and decision-making processes in a given context, thereby driving the progression of the subevent.
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
+Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
+
+**[Common Rules for all subtasks:]**
+    1. Ensure concise, accurate, and complete content, paying special attention to numbers, names, abbreviations, and dates.
+    2. Maintain consistency across subtasks to ensure the overall narrative is coherent.
+    3. The [Article Title:], [Article:] or other text fields may contain Unicode punctuation (e.g., “ ”, ’, —) or other non-ASCII characters. If such characters appear in any JSON output, please either properly escape them (e.g., \u2019 for ’) or replace them with standard ASCII equivalents to avoid parsing errors. Always use valid ASCII double quotes (") for JSON keys and string values, and escape internal quotes as needed (e.g., \").
+
+**[Common Rules for Human Value Understanding subtasks:]**
+    1. For each [field: "subevent"], identify the possible and relevant underlying human values according to the given [Human Value:] categories.
+    2. Each identified human value must be structured as a JSON object:
+        2.1. Determine the responsible actor/group and nest the value under that actor.
+        2.2. All human values must be organized in an actor-centric format, where each actor has two subfields:
+            - "aligned_with_human_values": { value_key: { confidence, explanation }, ... }, values that support or promote a human value
+            - "contradictory_to_human_values": { value_key: { confidence, explanation }, ... }
+                Values that oppose or violate a human value.
+                Use {} if empty.
+        2.3. The full structure must follow the actor-centric format; do not list values globally across actors.
+        2.4. [field: "key"]: The level-1 human values
+        2.5. [field: "value"]: An object containing:
+            2.5.1. Confidence scores must:
+                - Be formatted in scientific notation (e.g., 9.034560e-01)
+                - Reflect semantic variation across different value types, actors, and layers
+                - Follow a formal, statistical style (e.g., softmax, ensemble, etc.)
+            2.5.2. [field: "explanation"]: Provide a detailed explanation, strictly between 20 and 50 words, for why the [field: "subevent"] reflects this human value. Ensure the explanation meets this word limit—responses shorter than 20 words or longer than 50 words are not acceptable. If necessary, rephrase explanations to meet this word limit. (Do not display the word count.)
+    3. Ensure that the identified human values are sorted in descending order by the [field: "confidence"] score.
+    4. Actor Restriction Rule:
+        - Only assign values to the actor names explicitly listed in [Human Value-based Actors:].
+        - Do not create, modify, or infer any new actor groups during classification.
+        - If an actor has no values at a specific level, retain the actor with empty subfields ("aligned_with_human_values": {}, "contradictory_to_human_values": {}).
+    5. [Human Value Description:] provides reference explanations for each type of human value, clarifying their meanings to aid in accurate identification and classification. The model should use these descriptions when determining relevant human values in the text.
+    6. For all human value fields (e.g., article_human_values, subevents_human_values, behavior_chains_human_values, story_narrative_human_values), the actor-centric structure must be consistently applied at every semantic level.
+    7. Even if no values are assigned to a particular actor, still include the actor key with both fields ("aligned_with_human_values" and "contradictory_to_human_values") as empty objects {} to ensure structural completeness.
+
+**[Final Filtering Rule:]**
+After you finish generating the potential human value labels, you must perform a strict final filtering step. Only keep the human value labels that exactly match the labels listed in [Human Value:]. You are strictly prohibited from introducing, guessing, or keeping any labels not listed in [Human Value:]. Remove any additional or alternative labels completely. If no label from [Human Value:] applies after this filtering, set the value to "None" or leave it empty. This final filtering step is mandatory and must be explicitly performed before returning the final JSON output.
+
+This whole task comprises the following subtasks:
+[Subtask-1: Article-Level Human-Value Classification]
+    Goal: For each actor involved in the article, identify the [Human Value:] they reflect, and classify them into "aligned_with_human_values" and "contradictory_to_human_values".
+        Do not add or infer new actors. Only use the provided actor list for classification.
+    Rules:
+        1. All classified values must be grouped under the respective actor/group who reflects them.
+        2. For each actor, use two fields to organize the values: "aligned_with_human_values" and "contradictory_to_human_values". Each value should be placed under the appropriate field according to whether it supports or violates the human value.
+        3. If no values exist for a category within an actor, use an empty object {} to preserve consistency.
+        4. For each classified human value, provide:
+            4.1. A confidence score: All generated confidence scores should be formatted in scientific notation (e.g., 9.173450e-01).
+            4.2. A justification explaining why the human value is present in the article.
+    Input: [Article:], [Human Value:], [Human Value-based Actors:]
+    Output: [field: "article_human_values"]
+
+[Subtask-2: Subevent-Level Human-Value Classification]
+    Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
+    Goal: For each actor involved in the [field: "subevent"], identify the [Human Value:] they reflect and organize them into "aligned_with_human_values" and "contradictory_to_human_values".
+    Rules:
+        1. For each identified human value, determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
+    Input: [Article:], [Human Value-based Actors:], [field: "subevent"], [field: "argument_mentions"], [Human Value:]
+    Output: [field: "subevents_human_values"]
+
+[Subtask-3: Behavior Chain-Level Human-Value Classification]
+    Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
+    Goal: Identify the [Human Value:] reflected by each [field: "behaviors"] in the behavior chain, and organize them into "aligned_with_human_values" and "contradictory_to_human_values". The behavior chains are represented by [field: "behavior_ids_chains"], which contains a list of behavior IDs rather than behavior names. For each behavior chain, identify:
+        1. The set of [Human Value:] reflected in the behaviors.
+        2. Determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
+        3. The confidence score for each human value.
+        4. A justification explaining why the value is associated with the behavior chain.
+    Input: [Article:], [Human Value-based Actors:], [field: "behaviors"], [Human Value:]
+    Output: [field: "behavior_chains_human_values"]
+
+[Subtask-4: Story Narrative-Level Human-Value Classification]
+    Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
+    Goal: For each actor involved in the [field: "story_narratives"], identify the [Human Value:] they reflect and organize them into "aligned_with_human_values" and "contradictory_to_human_values". For each [story_narrative: description], identify:
+        1. The set of [Human Value:] reflected.
+        2. Determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
+        3. The confidence score for each human value.
+        4. A justification explaining how the narrative conveys the value.
+    Input: [Article:], [Human Value-based Actors:], [field: "story_narratives"], [Human Value:]
+    Output: [field: "story_narrative_human_values"]
+
+**[Example: output format]**
+{
+  "article_human_values": {
+    "Religious Organizations and Supporters": {
+      "aligned_with_human_values": {
+        "Be holding religious faith": {
+          "confidence": "9.123450e-01",
+          "explanation": "..."
+        },
+        "Have social recognition": {
+          "confidence": "8.921560e-01",
+          "explanation": "..."
+        },
+        "Have a sense of belonging": {
+          "confidence": "8.734560e-01",
+          "explanation": "..."
+        },
+        "Be just": {
+          "confidence": "8.543210e-01",
+          "explanation": "..."
+        }
+      },
+      "contradictory_to_human_values": {}
+    },
+    "Government / Lawmakers (who passed the controversial law)": {
+      "aligned_with_human_values": {},
+      "contradictory_to_human_values": {
+        "Have a stable society": {
+          "confidence": "8.845670e-01",
+          "explanation": "..."
+        },
+        "Be respecting traditions": {
+          "confidence": "8.654320e-01",
+          "explanation": "..."
+        },
+        "Have social recognition": {
+          "confidence": "8.467890e-01",
+          "explanation": "..."
+        }
+      }
+    }
+  },
+  "subevents_human_values": [
+    {
+      "subevent_id": "0",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be holding religious faith": {
+            "confidence": "9.034560e-01",
+            "explanation": "..."
+          },
+          "Be just": {
+            "confidence": "8.845670e-01",
+            "explanation": "..."
+          },
+          "Have social recognition": {
+            "confidence": "8.656780e-01",
+            "explanation": "..."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    },
+    {
+      "subevent_id": "1",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be respecting traditions": {
+            "confidence": "8.743210e-01",
+            "explanation": "..."
+          },
+          "Be just": {
+            "confidence": "8.543210e-01",
+            "explanation": "..."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    },
+    {
+      "subevent_id": "2",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be responsible": {
+            "confidence": "8.432100e-01",
+            "explanation": "..."
+          },
+          "Have a stable society": {
+            "confidence": "8.234560e-01",
+            "explanation": "..."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    }
+  ],
+  "behavior_chains_human_values": [
+    {
+      "behavior_ids_chains": [
+        "0",
+        "1",
+        "2"
+      ],
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be holding religious faith": {
+            "confidence": "9.234560e-01",
+            "explanation": "..."
+          },
+          "Be responsible": {
+            "confidence": "9.032100e-01",
+            "explanation": "..."
+          },
+          "Have a sense of belonging": {
+            "confidence": "8.834560e-01",
+            "explanation": "..."
+          },
+          "Be just": {
+            "confidence": "8.632100e-01",
+            "explanation": "..."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    }
+  ],
+  "story_narrative_human_values": [
+    {
+      "story_narrative_id": "0",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be holding religious faith": {
+            "confidence": "9.334560e-01",
+            "explanation": "..."
+          },
+          "Be just": {
+            "confidence": "9.132100e-01",
+            "explanation": "..."
+          },
+          "Be responsible": {
+            "confidence": "8.934560e-01",
+            "explanation": "..."
+          },
+          "Have social recognition": {
+            "confidence": "8.850000e-01",
+            "explanation": "..."
+          },
+          "Have a sense of belonging": {
+            "confidence": "8.750000e-01",
+            "explanation": "..."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    },
+    {
+      "story_narrative_id": "1",
+      "Religious Organizations and Supporters": {
+        "aligned_with_human_values": {
+          "Be responsible": {
+            "confidence": "9.134560e-01",
+            "explanation": "..."
+          },
+          "Be just": {
+            "confidence": "9.034560e-01",
+            "explanation": "..."
+          },
+          "Have a stable society": {
+            "confidence": "8.934560e-01",
+            "explanation": "..."
+          }
+        },
+        "contradictory_to_human_values": {}
+      }
+    }
+  ]
+}
+
+**[Level-1 Human Value:]**
+[Human_value]
+
+**[Human Value Description:]**
+[Human_value_description]
+
+**[Human Value-based Actors:]**
+{"actors": [Human_value_based_actors]}
+
+**[Article:]**
+[Article_value]
+
+**[Extracted Subevent:]**
+{"subevents": [Extracted_subevent]}
+
+**[Extracted Behavior chain:]**
+{"behaviors": [Extracted_behavior_chain]}
+
+**[Generated Story Narrative:]**
+{"story_narratives": [Generated_story_narrative]}
+
+**[Note: Rules for output format]**
+    1 Please provide a complete and detailed response.
+        1.1 Do not leave placeholders like "// Additional behavior chains as needed".
+        1.2 Fully expand and explicitly write out every field.
+        1.3 If you reach token limits, inform explicitly instead of placing placeholders.
+    2. The generated JSON output must strictly according to the provided specifications. The final JSON must be a valid JSON object with no additional commentary, comment lines, or annotations. In other words, do not include any lines or inline comments such as // ... Additional subevents_human_values entries for subevent_ids 3 to 21 or any similar commentary. Ensure that the JSON output is clean and free from any non-JSON text.
+    3. Ensure that the output does not include any comments such as "// Additional action triplets omitted for brevity" and generate as much complete content for all subtasks as possible.
+    4. JSON comments (//) are strictly forbidden.
+    5. Prefixes such as "````json\n`" or any similar markers are strictly forbidden. The JSON output must start directly with valid JSON text.
+    6. The final merged JSON must be 100% valid and correctly formatted, ensuring no syntax errors (e.g., missing commas, incorrect nesting, or mismatched brackets).
+    7. All key-value pairs must comply with JSON standards to guarantee error-free parsing.
+    8. Strictly adhere to structural integrity when merging JSON outputs. Any malformed or incomplete JSON is unacceptable.
+    9. All responses must strictly adhere to valid JSON format, without any irrelevant information.
+    10. Properly escape all quotes within JSON content using \" to ensure no formatting errors.
+    11. Use double quotes for all JSON keys and string values (e.g., "key": "value").
+    12. Note: The content in the [Example: output format] are unrelated to the task.
+    13. All keys in the generated JSON must exactly match the actor names provided in [Human Value-based Actors:]. The system will perform strict key matching during evaluation.
+
+This is a strict rule: if any value not on the [Human Value:] list appears in the final JSON, your output will be rejected.

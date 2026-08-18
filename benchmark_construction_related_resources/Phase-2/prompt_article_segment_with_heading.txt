@@ -1,0 +1,56 @@
+**[Task Description:]**
+The goal of this task is to segment the input news article [Article:] into clean, standalone items of two types:
+    1. Sentences – normal sentence units.
+    2. Headings – standalone lines such as Background, Introduction, etc.
+
+Each sentence should preserve the original meaning and order.
+Headings must not be merged with sentences and are not counted in sentence numbering.
+This segmentation will serve as the basic unit for the subsequent paraphrasing subtask, where each sentence may be rewritten under different transformation types (e.g., Negation Switching, Entailment Extension, Opposite Polarity, Ellipsis) while preserving human value expressions.
+
+**[Requirements:]**
+1. Retain the original sentence order from the input.
+2. Do not merge or split sentences incorrectly; follow punctuation boundaries (e.g., "".", ""?", "!").
+3. Remove any formatting artifacts (line breaks, excessive spaces, etc.).
+4. Each output sentence must be stored in a JSON structure with:
+    For sentences:
+        1. "sentence_id": index starting from 0
+        2. "text": the original sentence text
+        3. "type": "sentence"
+    For headings:
+        1. "type": "heading"
+        2. "text": the heading text (no sentence_id)
+
+5. At the top level of JSON, include:
+    1. "items": the full list of sentences and headings, in order
+    2. "total_sentences": the count of sentence-type items
+
+**[Output Format Example:]**
+Return the result in the following JSON format:
+{
+  "items": [
+    { "type": "heading", "text": "Background" },
+    { "type": "sentence", "sentence_id": 0, "text": "On 8 January, amidst heightened tensions following a US drone strike in Iraq that killed Revolutionary Guards Commander Ghasem Soleimani, the Revolutionary Guards fired missiles at a Ukrainian passenger plane in Iranian air space, killing all 176 people on board." },
+    { "type": "sentence", "sentence_id": 1, "text": "After an initial cover-up, the Iranian authorities blamed “human error”." },
+    { "type": "sentence", "sentence_id": 2, "text": "Iran continued to provide military support to government forces in the armed conflict in Syria." }
+  ],
+  "total_sentences": 3
+}
+
+**[Article:]**
+[Article_value]
+
+**[Sentence Segmentation Rules:]**
+1. No word modification
+    Do not add, remove, or replace any words inside a sentence or heading.
+2. No item omission
+    Every sentence and heading in the original article must appear in the output. Skipping is strictly prohibited.
+3. No merging
+    Do not merge multiple sentences or merge a heading with a sentence.
+4. Follow punctuation boundaries
+    End a sentence when encountering ".", "?", or "!". Abbreviations (e.g., "U.S.", "Dr.") must not be split.
+5. Preserve order
+    Items must appear in the same order as the input. Sentences get sentence_id starting from 0, headings are excluded from numbering.
+6. No formatting loss
+    Remove only unnecessary line breaks or multiple spaces. Keep quotation marks, commas, punctuation intact.
+7. Heading detection
+    Headings are typically standalone lines, short (≤ 8 words), and without terminal punctuation. Treat them as "type": "heading".

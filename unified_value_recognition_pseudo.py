@@ -971,22 +971,12 @@ def train_lora_sft(
 
     return model, tok
 
-# 用法
-# train_events_by_guid = data_utils.index_events_by_guid(train_event)
-# dev_events_by_guid   = data_utils.index_events_by_guid(dev_event)
-# test_events_by_guid  = data_utils.index_events_by_guid(test_event)
-# report = check_guid_leakage(train_events_by_guid, dev_events_by_guid, test_events_by_guid)
-
-# 如果你想强制“必须无泄漏”，加断言：
-# assert report["overlap_train_dev"] == 0 and report["overlap_train_test"] == 0, "Found train leakage into dev/test!"
-
-
 # ----------------------------
 # Main
 # ----------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config", type=str, default="/tmp/echv_experiment/config/unified_value_recognition.json")
+    ap.add_argument("--config", type=str, default="config/unified_value_recognition.json")
     # args = parser.parse_args()
     # config = config.Config(args)
 
@@ -1047,7 +1037,7 @@ def main():
 
 
     # ===== CHANGE 4) 在 main() 里 argparse 增加这些参数 =====
-    ap.add_argument("--adapter_dir", type=str, default="/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/ministral-3-8B-Instruct-2512/Ministral-3-8B-Instr_20260114_113808/checkpoints/epoch_6/",
+    ap.add_argument("--adapter_dir", type=str, default="results/G3/outputs/ministral-3-8B-Instruct-2512/Ministral-3-8B-Instr_20260114_113808/checkpoints/epoch_6/",
                     help="For G3 infer: path to LoRA adapter dir (the out_dir from train_lora).")
     ap.add_argument("--load_dir", type=str, default="",
                     help="For infer: load full finetuned checkpoint from this dir (e.g., ECHV-LLAMA).")
@@ -1069,7 +1059,7 @@ def main():
                     help="traning system definition.")
     ap.add_argument("--infer_batch_size", type=int, default=4,
                     help="Batch size for local inference (G2/G3). Start from 2 if OOM.")
-    ap.add_argument("--dump_sampled_dir", type=str, default="/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/",
+    ap.add_argument("--dump_sampled_dir", type=str, default="dataset/",
                     help="If set, after sampling, dump sampled train/dev/test event+hv json files into this dir.")
     # 新增：是否使用时间戳目录
     ap.add_argument("--use_timestamp", type=str, default="1",
@@ -1106,17 +1096,17 @@ def main():
             "--max_len", "4096",
             "--max_new_tokens", "128",
             "--train_event",
-            "/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/training_dataset_total_formatted.json",
+            "dataset/training_dataset_total_formatted.json",
             "--train_hv",
-            "/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/train_gold_full.json",
+            "dataset/train_gold_full.json",
             "--dev_event",
-            "/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/dev_dataset_total_formatted.json",
+            "dataset/dev_dataset_total_formatted.json",
             "--dev_hv",
-            "/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/dev_gold_full.json",
+            "dataset/dev_gold_full.json",
             "--test_event",
-            "/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/test_dataset_total_formatted.json",
+            "dataset/test_dataset_total_formatted.json",
             "--test_hv",
-            "/home/iiserver32/Workbench/wang_yao/echv/formal/experimental_dataset/dataset/deep_analysis/test/psedo_BCE_SCE_test_gold.json",
+            "dataset/deep_analysis/test/psedo_BCE_SCE_test_gold.json",
             "--canonical_prompt", "prompt/canonical_prompt.txt",
             "--canonical_system", "prompt/canonical_system.txt",
             "--hv1_label_dir", "dataset/hv/id2hv.json",
@@ -1127,18 +1117,18 @@ def main():
             "--sample_test_n", "99999",
             "--sample_seed", "42",
             "--out_dir",
-            "/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt",
+            "results/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt",
             "--pred_out",
-            "/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/test_pred.json",
+            "results/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/test_pred.json",
             "--report_out",
-            "/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/debug_report.json",
+            "results/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/debug_report.json",
             "--pred_out_dev",
-            "/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/dev_test_pred.json",
+            "results/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/dev_test_pred.json",
             "--report_out_dev",
-            "/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/debug_dev_report.json",
+            "results/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512_pseudo/debug_lora_ckpt/debug_dev_report.json",
             "--g1_evaluate_only", "y",
         ]
-            # "--resume_lora_dir", "/home/iiserver32/Workbench/wang_yao/echv/echv_experiment/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512/Llama-3.1-8B-Instruc_20260117_163307/checkpoints/epoch_4/",
+            # "--resume_lora_dir", "results/G3/outputs/mistralai/Ministral-3-8B-Instruct-2512/Llama-3.1-8B-Instruc_20260117_163307/checkpoints/epoch_4/",
             # "--resume_epoch", "4",
             # "--temperature_qwen", "0.6",
 

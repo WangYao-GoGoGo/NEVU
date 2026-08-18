@@ -1,0 +1,51 @@
+**[Task Description:]**
+You are given a factual or semi-factual news article as a single document unit. Your task is to classify the article into one genre from: Current, Feature, Special_Report, Attribution_QA, Opinion, Background_Analysis, Profile_Biography, Review, Satire, or Unspecified.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article:]**
+[Article_value]
+
+**[News Type:]**
+{
+    "genre_definitions": {
+        "Current": "Time-sensitive reporting focused on recent or ongoing events, including straight news and current-event reporting.",
+        "Feature": "Longer-form, narrative, human-interest, lifestyle, or cultural reporting that is not primarily driven by immediate timeliness.",
+        "Special_Report": "In-depth or investigative reporting requiring extensive research and evidence gathering, often presenting a deep examination of a specific subject.",
+        "Attribution_QA": "Interview content presented primarily through explicit attribution, especially in a question-and-answer structure or direct quoted exchanges.",
+        "Opinion": "Authorial viewpoint or editorial content intended to express persuasion, normative judgment, commentary, or advocacy.",
+        "Background_Analysis": "Explainer or analytical content that provides background, synthesis, interpretation, contextualization, or causal reasoning.",
+        "Profile_Biography": "Person-centered reporting describing the life, background, experiences, or activities of an individual based on facts, research, and/or interviews.",
+        "Review": "Critical or evaluative content concerning creative works, services, products, performances, or consumer experiences.",
+        "Satire": "Content using humor, irony, parody, or exaggeration for satirical purposes and not intended to be interpreted as literal factual reporting.",
+        "Unspecified": "Fallback category for noisy, mixed, ambiguous, or out-of-scope items that cannot be reliably assigned to another genre."
+    }
+}
+
+Output:
+1. article_type: The genre of the article (choose from the [News Type:]).
+2. rationale: Short explanation of the classification decision.
+
+**[Output Format Example:]**
+{
+    "article_type_classification_results": {
+        "article_type": "News Type",
+        "rationale": "string"
+    }
+}
+
+**[Answer Guidelines:]**
+1. Select exactly one article type based on the article's primary communicative purpose and overall structure, rather than its topic alone.
+2. When multiple types appear possible, use the following distinctions:
+   * Primarily reports what recently happened → Current
+   * Primarily explains why or how something happened → Background_Analysis
+   * Provides deep investigation, extensive evidence, or detailed reconstruction → Special_Report
+   * Uses longer-form human-interest, cultural, lifestyle, or narrative reporting → Feature
+   * Focuses primarily on one person's life, background, or experiences → Profile_Biography
+   * Uses interview, Q&A, or direct attributed exchanges as the dominant structure → Attribution_QA
+   * Primarily expresses authorial argument, advocacy, judgment, or persuasion → Opinion
+   * Primarily evaluates a work, product, service, performance, or experience → Review
+   * Primarily uses parody, irony, exaggeration, or humor rather than literal factual reporting → Satire
+3. Use Unspecified only when no other genre can be assigned with reasonable confidence.
+4. Return only the required JSON result without additional commentary.
