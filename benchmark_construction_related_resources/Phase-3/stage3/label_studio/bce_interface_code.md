@@ -19,8 +19,8 @@
                 <Header value="=========If you choose No or Unknown========"  size="6"/>
                 <Choice value="Actor's behavior/statement does not involve the value"/>
                 <Choice value="Actor's behavior/statement expresses the opposite value"/>
-                <Choice value="The behavior chain is irrelevant to the value"/>
-                <Choice value="Insufficient contextual information in the behavior chain"/>
+                <Choice value="The behavior-based composite event is irrelevant to the value"/>
+                <Choice value="Insufficient contextual information in the behavior-based composite event"/>
                 <Choice value="Actor reference is unclear (ambiguous/pronoun issue)"/>
                 <Choice value="The value expression is vague or unclear"/>
                 <Choice value="Other"/>

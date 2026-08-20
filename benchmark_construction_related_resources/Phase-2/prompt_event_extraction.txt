@@ -5,7 +5,7 @@ Please consolidate the outputs from all subtasks into a single.
 
 **[Note: Rules for output format]**
 1 Please provide a complete and detailed response.
-    1.1 Do not leave placeholders like "// Additional behavior chains as needed".
+    1.1 Do not leave placeholders like "// Additional behavior-based composite events as needed".
     1.2 Fully expand and explicitly write out every field.
     1.3 If you reach token limits, inform explicitly instead of placing placeholders.
 2. The generated JSON output must strictly according to the provided specifications. The final JSON must be a valid JSON object with no additional commentary, comment lines, or annotations. In other words, do not include any lines or inline comments such as // ... Additional subevents_human_values entries for subevent_ids 3 to 21 or any similar commentary. Ensure that the JSON output is clean and free from any non-JSON text.
@@ -38,7 +38,7 @@ This whole task comprises the following subtasks:
         1. Use value explanations to infer the agents behind each value expression.
         2. Reference value ontology to match value types with likely actor types.
         3. When multiple actors express the same value, differentiate them explicitly.
-    Input: [Article:], [field: "article_human_values"], [field: "subevents_human_values"], [field: "behavior_chains_human_values"], [field: "story_narrative_human_values"]
+    Input: [Article:], [field: "article_human_values"], [field: "subevents_human_values"], [field: "behavior_based_composite_event_human_values"], [field: "story_based_composite_event_human_values"]
     Output: [field: "actors"]
 
 [Subtask-2: Subevent Extraction]
@@ -71,23 +71,23 @@ This whole task comprises the following subtasks:
 [Subtask-4: Behavior Extraction]
     Goal: Extract all observable behaviors that involve actions, movement, transactions, or social engagements for each [field: "subevent"]. Group these behaviors into logical chains based on their narrative sequence, and nest each chain under a descriptive chain title (e.g., "Arrival & Preparation").
     Rules:
-        1. Under "behaviors", each behavior chain should be represented as an object where the key is the chain title and the value is an array of behavior objects.
+        1. Under "behaviors", each behavior-based composite event should be represented as an object where the key is the chain title and the value is an array of behavior objects.
         2. Grouping: Organize behaviors in logical sequences (e.g., "Devotees arrive" → "Buy livestock" → "Sacrificial rituals"). For each sequence, use a descriptive chain title as the key.
         3. Ensure that all generated behaviors are concise and summarized.
     Input: [Article:], [field: "subevent"], [field: "argument_mentions"]
     Output: [field: "behaviors"]
 
-[Subtask-5: Story Narrative Generation]
-    Goal: Given a set of [field: "subevents":], cluster all [field: "subevents"] into story narratives. For each narrative, provide:
+[Subtask-5: Story-Based Composite Event Generation]
+    Goal: Given a set of [field: "subevents":], cluster all [field: "subevents"] into story-based composite events. For each narrative, provide:
         1. A narrative ID.
         2. A narrative title summarizing the subevents as the json key field.
         3. The related subevent IDs included in the narrative.
         4. A brief description of the storyline.
     Input: [Article:], [field: "behaviors"], [field: "subevent"], [field: "argument_mentions"]
-    Output: [field: "story_narratives"]
+    Output: [field: "story_based_composite_events"]
 
 [Subtask-6: Disambiguration]
-    Goal: Given extracted subevents ([field: "subevents"]), behaviors ([field: "behaviors"]), argument mentions ([field: "argument_mentions"]), action triplets ([field: "action_triplets"]), and story narratives ([field: "story_narratives"]), ensure clarity and remove ambiguities.
+    Goal: Given extracted subevents ([field: "subevents"]), behaviors ([field: "behaviors"]), argument mentions ([field: "argument_mentions"]), action triplets ([field: "action_triplets"]), and story-based composite events ([field: "story_based_composite_events"]), ensure clarity and remove ambiguities.
     Rules:
         1. For each sentence-level subevent ([field: "subevent"]), please ensure that the disambiguated, clarified, and complete content is stored in the [field: "disambiguation"] field.
         2. Please identify any ambiguous words still present in the sentence into the [field: "disambiguation"] field, using the ambiguous word as the key and the disambiguated term as the value.
@@ -211,7 +211,7 @@ This whole task comprises the following subtasks:
       ]
     }
   ],
-  "story_narratives": [
+  "story_based_composite_events": [
     {
         "title": "Criticism and Exposure",
         "id": "0",

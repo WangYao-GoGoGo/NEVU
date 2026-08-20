@@ -1,11 +1,11 @@
 **[Task description]**
-This task consists of five subtasks, aiming to perform multi-level human value evaluation and disambiguation based on previously extracted event data from the provided [Article:]. Specifically, it involves analyzing human values at the article, subevent, behavior chain, and story narrative levels, as well as resolving ambiguities in sentence-level subevents to clarify event references and relationships.
+This task consists of five subtasks, aiming to perform multi-level human value evaluation and disambiguation based on previously extracted event data from the provided [Article:]. Specifically, it involves analyzing human values at the article, subevent, behavior-based composite event, and story-based composite event levels, as well as resolving ambiguities in sentence-level subevents to clarify event references and relationships.
 Please consolidate the outputs from all subtasks into a single, complete JSON structure, ensuring the output format adheres to the following example: [Example: output format]
 Note: You must only classify values under the actors provided in [Human Value-based Actors:]. Do not infer or introduce any new actors.
 
 **[Note: Rules for output format]**
     1 Please provide a complete and detailed response.
-        1.1 Do not leave placeholders like "// Additional behavior chains as needed".
+        1.1 Do not leave placeholders like "// Additional behavior-based composite events as needed".
         1.2 Fully expand and explicitly write out every field.
         1.3 If you reach token limits, inform explicitly instead of placing placeholders.
     2. The generated JSON output must strictly according to the provided specifications. The final JSON must be a valid JSON object with no additional commentary, comment lines, or annotations. In other words, do not include any lines or inline comments such as // ... Additional subevents_human_values entries for subevent_ids 3 to 21 or any similar commentary. Ensure that the JSON output is clean and free from any non-JSON text.
@@ -43,25 +43,25 @@ This whole task comprises the following subtasks:
     Input: [Article:], [field: "subevent"], [field: "argument_mentions"], [Human Value:]
     Output: [field: "subevents_human_values"]
 
-[Subtask-3: Behavior Chain Human Value Understanding]
+[Subtask-3: Behavior-Based Composite Event Human Value Understanding]
     Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
-    Goal: Identify the human values reflected by each [field: "behaviors"] in the behavior chain, and organize them into "aligned_with_human_values" and "contradictory_to_human_values". The behavior chains are represented by [field: "behavior_ids_chains"], which contains a list of behavior IDs rather than behavior names. For each behavior chain, identify:
+    Goal: Identify the human values reflected by each [field: "behaviors"] in the behavior-based composite event, and organize them into "aligned_with_human_values" and "contradictory_to_human_values". The behavior-based composite events are represented by [field: "behavior_based_composite_event_ids"], which contains a list of behavior IDs rather than behavior names. For each behavior-based composite event, identify:
         1. The set of human values reflected in the behaviors.
         2. Determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
         3. The confidence score for each human value.
-        4. A justification explaining why the value is associated with the behavior chain.
+        4. A justification explaining why the value is associated with the behavior-based composite event.
     Input: [Article:], [field: "behaviors"], [Human Value:]
-    Output: [field: "behavior_chains_human_values"]
+    Output: [field: "behavior_based_composite_event_human_values"]
 
-[Subtask-4: Story Narrative Human Value Understanding]
+[Subtask-4: Story-Based Composite Event Human Value Understanding]
     Only use the actors provided in [Human Value-based Actors:] for classification. Do not infer additional actor groups from the text.
-    Goal: For each actor involved in the [field: "story_narratives"], identify the human values they reflect and organize them into "aligned_with_human_values" and "contradictory_to_human_values". For each [story_narrative: description], identify:
+    Goal: For each actor involved in the [field: "story_based_composite_events"], identify the human values they reflect and organize them into "aligned_with_human_values" and "contradictory_to_human_values". For each [story_based_composite_event: description], identify:
         1. The set of human values reflected.
         2. Determine the responsible actor, and place the value under that actor’s "aligned_with_human_values" or "contradictory_to_human_values" field accordingly.
         3. The confidence score for each human value.
         4. A justification explaining how the narrative conveys the value.
-    Input: [Article:], [field: "story_narratives"], [Human Value:]
-    Output: [field: "story_narrative_human_values"]
+    Input: [Article:], [field: "story_based_composite_events"], [Human Value:]
+    Output: [field: "story_based_composite_event_human_values"]
 
 **[Common Rules for all subtasks:]**
     1. Ensure concise, accurate, and complete content, paying special attention to numbers, names, abbreviations, and dates.
@@ -104,7 +104,7 @@ This whole task comprises the following subtasks:
             6.2.3. These values must be logically attributable to the assigned actor group, and must not conflict with the event context.
         6.3. All human values — both original and newly added — must be properly nested under their respective actor groups in the final JSON structure.
     7. [Human Value Description:] provides reference explanations for each type of human value, clarifying their meanings to aid in accurate identification and classification. The model should use these descriptions when determining relevant human values in the text.
-    8. For all human value fields (e.g., article_human_values, subevents_human_values, behavior_chains_human_values, story_narrative_human_values), the actor-centric structure must be consistently applied at every semantic level.
+    8. For all human value fields (e.g., article_human_values, subevents_human_values, behavior_based_composite_event_human_values, story_based_composite_event_human_values), the actor-centric structure must be consistently applied at every semantic level.
     9. Even if no values are assigned to a particular actor, still include the actor key with both fields ("aligned_with_human_values" and "contradictory_to_human_values") as empty objects {} to ensure structural completeness.
 
 **[Example: output format]**
@@ -147,9 +147,9 @@ This whole task comprises the following subtasks:
     },
     ...
   ],
-  "behavior_chains_human_values": [
+  "behavior_based_composite_event_human_values": [
     {
-      "behavior_ids_chains": [
+      "behavior_based_composite_event_ids": [
         "0",
         "1",
         "2"
@@ -166,9 +166,9 @@ This whole task comprises the following subtasks:
       }
     }
   ],
-  "story_narrative_human_values": [
+  "story_based_composite_event_human_values": [
     {
-      "story_narrative_id": "0",
+      "story_based_composite_event_id": "0",
       "Religious Organizations and Supporters": {
         "aligned_with_human_values": {
           "Be holding religious faith": {
@@ -208,8 +208,8 @@ This whole task comprises the following subtasks:
 **[Extracted Argument Mentions:]**
 {"argument_mentions": [Extracted_argument_mentions]}
 
-**[Extracted Behavior chain:]**
-{"behaviors": [Extracted_behavior_chain]}
+**[Extracted Behavior-Based Composite Event:]**
+{"behaviors": [Extracted_behavior_based_composite_event]}
 
-**[Generated Story Narrative:]**
-{"story_narratives": [Generated_story_narrative]}
+**[Generated Story-Based Composite Event:]**
+{"story_based_composite_events": [Generated_story_based_composite_event]}

@@ -1,30 +1,30 @@
 **[Task Description:]**
-You are given a set of behavior chains extracted from factual news articles. Each behavior chain is composed of a sequence of thematically or causally connected actions that span across multiple subevents.
-For each behavior chain, a set of value-based QA questions has been generated based on previously predicted human value labels. Each value label is categorized as either:
+You are given a set of story-based composite events constructed from factual news articles. Each story-based composite event is composed of a sequence of subevents describing a thematically or temporally coherent storyline.
+For each story-based composite event, a set of value-based QA questions has been generated based on previously predicted human value labels. Each value label is categorized as either:
     * aligned_with_human_values: the actor's behavior is thought to reflect or uphold a given human value.
     * contradictory_to_human_values: the actor's behavior is thought to violate or go against a given human value.
-Each question asks whether a specific actor in a behavior chain demonstrates (or contradicts) a specific human value, based on the behavior chain’s actions and the provided value definition.
+Each question asks whether a specific actor in a story-based composite event demonstrates (or contradicts) a specific human value, and with a short definition of the value provided.
 
 **[Key Concepts:]**
 Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
 Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
 Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
-Behavior Chain: A behavior chain is a semantically or causally linked sequence of actions that together express a coherent behavioral pattern or goal. These actions span across multiple subevents and, taken as a whole, reflect meaningful intentions, progressions, or outcomes involving one or more actors.
-Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the behavior chain through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
+Story-Based Composite Event: A story-based composite event is a higher-level unit of meaning composed of multiple logically or thematically related subevents. Each story-based composite event reflects a continuous storyline or conceptual arc that helps connect and contextualize the subevents into a coherent interpretive frame.
 Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
 Contradictory to Human Values: The content contradicts, opposes, or violates a specific human value.
 
 This whole task comprises the following subtasks:
 [Subtask: Human Value Label Verification]
-    Goal: The task is to evaluate the appropriateness of each human value label with respect to the behavior chain and make a binary judgment:
+    Goal: The task is to evaluate the appropriateness of each human value label with respect to the story-based composite event and make a binary judgment:
     Instructions:
-        1. Please answer the question field for each entry in the provided JSON using "yes" or "no", and briefly justify your answer in 1–2 sentences based on evidence from the article and the entire behavior chain.
-            * yes —  if the value label is correctly assigned (i.e., the behavior chain as a whole truly reflects or contradicts the value as claimed)
-            * no — if the value label is incorrectly assigned (i.e., the behavior chain does not meaningfully reflect or contradict the value)
-        2. For each value label, please also provide a brief explanation to justify your answer based on the sequence and logic of actions within the chain.
-        3. Be specific and focus on the progression of behaviors, intentions, or consequences across the entire chain, not just individual subevent segments.
+        1. Please answer the question field for each entry in the provided JSON using "yes" or "no", and briefly justify your answer in 1–2 sentences based on evidence from the story-based composite event (not just a single subevent).
+            * yes — if the value label is correctly assigned (i.e., the story-based composite event as a whole truly reflects or contradicts the value as claimed)
+            * no — if the value label is incorrectly assigned (i.e., the story-based composite event does not meaningfully reflect or contradict the value)
+        2. For each value label, please also provide a brief explanation to justify your answer based on the integrated narrative meaning and implications across the subevents.
+        3. Be specific and focus on the sequence of actions, intentions, or outcomes across the entire narrative, not just isolated behaviors from one subevent.
     Output:
-        1. "behavior_ids_chains" and "id": **copied directly from the input** (do not change or regenerate).
+        1. "id": **copied directly from the input** (do not change or regenerate).
         2. "actor" and "human_value_label": **copied directly from the input** (do not change or generate).
         3. "answer": "yes" or "no".
         4. "explanation": Justification for yes or no.
@@ -41,14 +41,14 @@ This whole task comprises the following subtasks:
 **[Human Value Definitions:]**
 [Human_value_definitions]
 
-**[Behavior chains-based Verification Questions:]**
-[behavior_chains_verification_questions]
+**[Story-Based Composite Event Verification Questions:]**
+[story_based_composite_event_verification_questions]
 
 **[Output Format Example:]**
 {
     "verified_results": [
         {
-            "behavior_ids_chains": ["0", "1"],
+            "story_based_composite_event_id": "0",
             "aligned_with_human_values": [
                 {
                     "id": "0",
@@ -83,7 +83,7 @@ This whole task comprises the following subtasks:
             ]
         },
         {
-            "behavior_ids_chains": ["2", "3"],
+            "story_based_composite_event_id": "1",
             "aligned_with_human_values": [
                 {
                     "id": "0",
@@ -121,27 +121,29 @@ This whole task comprises the following subtasks:
 }
 
 **[Answer Guidelines with Examples:]**
-Please refer to the following examples and conditions to guide your "yes"/"no" decisions for behavior chain-level human value labels:
+Please refer to the following examples and conditions to guide your "yes"/"no" decisions for story-based composite-event-level human value labels:
 For aligned_with_human_values labels:
     * Answer "yes" when:
-        The actor's behavior or intention in the chain clearly supports the given human value.
-        The value can be reasonably inferred from the combined actions, intentions, or consequences across the behavior chain.
-        Example: A series of actions by Catholic Church Leadership, including appointing women, giving them voting rights, and advocating for their inclusion in decision-making, collectively demonstrate openness and change → labeled as "Be broadminded" → Answer: yes
+        The actor’s behavior, decisions, or expressed intentions across the story-based composite event consistently reflect the given human value.
+        The human value can be reasonably inferred by integrating the actor’s actions and consequences across multiple subevents.
+        The overall structure and coherence of the story-based composite event support the presence of the value for the specified actor.
+        Example: Across several subevents, ordinary Moroccan and Algerian people are depicted synchronizing their prayers, feeling united across a closed border, and expressing spiritual solidarity → labeled as "Be holding religious faith" → Answer: yes
     * Answer "no" when:
-        The actor’s behaviors across the chain do not consistently or clearly reflect the human value.
-        The actor is mentioned but plays only a minor or passive role, or is not central to the behavioral sequence.
-        The assigned human value cannot be reasonably linked to the actual behaviors presented in the chain.
-        Example: The chain highlights steps by women’s advocacy groups, but the label “Be responsible” is incorrectly applied to male clergy, who play no active role in the chain → Answer: no
+        The actor’s actions across the narrative do not clearly demonstrate or consistently support the claimed value.
+        The value assignment is disconnected from the actual role or behavior of the actor within the narrative.
+        The actor is marginal to the narrative or has no meaningful engagement with the value in question.
+        Example: The narrative focuses on the author's internal reflection about the border, but assigns the label "Be responsible" to civil society actors, even though they are not portrayed taking action → Answer: no
 For contradictory_to_human_values labels:
     * Answer "yes" when:
-        The actor’s behavior in the chain clearly violates or stands in opposition to the given human value.
-        There is a pattern or culmination of harmful, dismissive, or exclusionary actions that contradict the value.
-        Example: A company repeatedly denies environmental concerns, ignores public outcry, and expands harmful practices → labeled as contradicting "Be protecting the environment" → Answer: yes
+        The actor’s behavior across the narrative violates, dismisses, or undermines the specified human value.
+        The contradiction is evident through a pattern of neglect, harm, or disregard of the value across multiple subevents.
+        Example: If a group of tourists repeatedly ignores cultural restrictions and climbs a sacred site despite warnings from Indigenous communities across multiple scenes → labeled as contradicting "Be respectful" → Answer: yes
     * Answer "no" when:
-        The actor’s actions across the chain do not conflict with the human value, or may even support it.
-        The label is based on a single ambiguous action that is outweighed by neutral or value-aligned behavior in the rest of the chain.
-        Example: A teacher's actions across several scenes focus on student empowerment and fairness, but the chain is labeled as contradicting "Have equality" based on a single policy mention without context → Answer: no
-These rules aim to ensure each label is grounded in the overall behavioral pattern and coherence of the chain, maintaining consistency between actor, human value, and sequential action interpretation.
+        The actor is portrayed as supporting the value, or their actions are neutral with respect to the value.
+        The contradiction appears in isolated details but is outweighed by value-aligned behavior in the overall narrative.
+        The actor has no significant presence in the narrative or is not linked to the value dimension.
+        Example: The narrative discusses border control policies, but labels local residents as contradicting "Be broadminded" even though they are portrayed as empathetic and culturally open throughout → Answer: no
+These rules aim to ensure that each human value label is evaluated in the context of the entire story-based composite event, with attention to coherence across actors, values, and multi-subevent expressions.
 
 **[Note: Rules for output format]**
     1 Please provide a complete and detailed response.

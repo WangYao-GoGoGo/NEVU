@@ -1,0 +1,70 @@
+**[Task Description:]**
+You are given a factual or semi-factual news article as a single document unit. Your task is to classify the article into one news type.
+
+[Task: News Type Classification]
+    Goal: Classify the article into one news type from [News Type Taxonomy].
+    Output:
+        1. news_type: The news type of the article. Choose exactly one category from [News Type Taxonomy].
+        2. rationale: Short explanation of the news type classification decision.
+
+**[Article Title:]**
+[Title_value]
+
+**[Article:]**
+[Article_value]
+
+**[News Type Taxonomy:]**
+{
+  "schema": {
+    "description": "A compact and annotation-stable news type taxonomy containing ten categories for news-domain texts."
+  },
+  "type_definitions": {
+    "Current": "Time-sensitive reporting focused on recent or ongoing events, including straight news and current-event reporting.",
+    "Feature": "Longer-form, narrative, human-interest, lifestyle, or cultural reporting that is not primarily driven by immediate timeliness.",
+    "Special_Report": "In-depth or investigative reporting requiring extensive research and evidence gathering, often presenting a deep examination of a specific subject.",
+    "Attribution_QA": "Interview content presented primarily through explicit attribution, especially in a question-and-answer structure or direct quoted exchanges.",
+    "Opinion": "Authorial viewpoint or editorial content intended to express persuasion, normative judgment, commentary, or advocacy.",
+    "Background_Analysis": "Explainer or analytical content that provides background, synthesis, interpretation, contextualization, or causal reasoning.",
+    "Profile_Biography": "Person-centered reporting describing the life, background, experiences, or activities of an individual based on facts, research, and/or interviews.",
+    "Review": "Critical or evaluative content concerning creative works, services, products, performances, or consumer experiences.",
+    "Satire": "Content using humor, irony, parody, or exaggeration for satirical purposes and not intended to be interpreted as literal factual reporting.",
+    "Unspecified": "Fallback category for noisy, mixed, ambiguous, or out-of-scope items that cannot be reliably assigned to another genre."
+  }
+}
+
+**[Output Format Example:]**
+{
+  "news_type_classification_results": {
+    "news_type": "Current | Feature | Special_Report | Attribution_QA | Opinion | Background_Analysis | Profile_Biography | Review | Satire | Unspecified",
+    "rationale": "string"
+  }
+}
+
+**[Answer Guidelines with Examples:]**
+[Rules for News Type Classification]
+1. Choose exactly one news type.
+    1.1 Current
+        Use this label for time-sensitive reporting focused on recent or ongoing events.
+    1.2 Feature
+        Use this label for longer-form narrative, human-interest, lifestyle, or cultural reporting that is not primarily driven by immediate timeliness.
+    1.3 Special_Report
+        Use this label for in-depth or investigative reporting based on extensive evidence and deep examination of a specific subject.
+    1.4 Attribution_QA
+        Use this label for interview or Q&A-style content presented primarily through explicit attribution or direct quoted exchanges.
+    1.5 Opinion
+        Use this label for authorial viewpoint, editorial commentary, persuasion, advocacy, or normative judgment.
+    1.6 Background_Analysis
+        Use this label for explainers or analytical articles that synthesize background, context, causes, implications, or interpretations.
+    1.7 Profile_Biography
+        Use this label for person-centered reporting about an individual's life, background, experiences, or activities.
+    1.8 Review
+        Use this label for critical or evaluative content about creative works, services, products, performances, or consumer experiences.
+    1.9 Satire
+        Use this label for humor, irony, parody, or exaggeration that should not be interpreted as literal factual reporting.
+    1.10 Unspecified
+        Use this fallback label for noisy, mixed, ambiguous, or out-of-scope items that cannot be reliably assigned to another news type.
+
+2. Classification rule.
+    2.1 Select the single best-fitting category based on the article's primary communicative function and textual form.
+    2.2 If the article combines multiple styles, choose the category that best describes the dominant format and purpose.
+    2.3 Use Unspecified only when the article is too noisy, mixed, ambiguous, or out of scope to classify reliably.

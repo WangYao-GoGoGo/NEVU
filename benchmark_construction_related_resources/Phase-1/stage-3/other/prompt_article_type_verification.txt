@@ -6,9 +6,9 @@ Human Value: A socially recognized moral or ethical principle reflected in the b
 Sensitive Content: Content related to nation-states, political regimes, wars, or geopolitical conflicts, where commentary on values may pose legal or ethical risks.
 
 [Subtask: Article Type Classification & Suitability]
-    Goal: Classify the article into a type (hard_news, feature_investigative, profile_biography, interview_QA, opinion_editorial, analysis_explainer, soft_news, lifestyle_culture, review_criticism, satire_humor, science_technology, other_misc), and decide whether it is suitable for human value research based on actors, subevents, behavior chains, and story narratives.
+    Goal: Classify the article into a type (hard_news, feature_investigative, profile_biography, interview_QA, opinion_editorial, analysis_explainer, soft_news, lifestyle_culture, review_criticism, satire_humor, science_technology, other_misc), and decide whether it is suitable for human value research based on actors, subevents, behavior-based composite events, and story-based composite events.
     Suitability criteria (binary):
-        1. Yes: The article clearly contains identifiable actors (individuals, groups, organizations, governments) and events/actions that can be structured into subevents, behavior chains, or narratives.
+        1. Yes: The article clearly contains identifiable actors (individuals, groups, organizations, governments) and events/actions that can be structured into subevents, behavior-based composite events, or narratives.
         2. No: The article is mainly abstract discussion of ideas, argumentative commentary, pure opinion/editorial without factual grounding, lifestyle/review content, or humor/satire, with little or no extractable actor–event structure.
         3. If the article is purely argumentative, abstract discussion, or theoretical commentary without concrete actors or actions, mark suitable_for_actor_value_research = No.
     Output:
@@ -18,7 +18,7 @@ Sensitive Content: Content related to nation-states, political regimes, wars, or
 
 [Subtask: Sensitive Content Detection & Suitability]
     Goal: For each article, the system should generate sensitive labels (zero, one, or multiple) and then give a binary answer to:
-    "Is this article suitable for human value research based on actors, subevents, behavior chains, and story narratives?"
+    "Is this article suitable for human value research based on actors, subevents, behavior-based composite events, and story-based composite events?"
         1. Yes → No sensitive categories detected (safe to include in human value research).
         2. No → Sensitive categories detected. Any presence of these categories makes the article not suitable for human value research.
     Output:
