@@ -103,17 +103,3 @@ python unified_value_recognition.py \
   --tfidf_max_df 0.95 \
   --tfidf_max_features 200000
 ```
-
-## Citation
-
-```bibtex
-@misc{wang2026eventcentrichumanvalueunderstanding,
-  title={Event-Centric Human Value Understanding in News-Domain Texts: An Actor-Conditioned, Multi-Granularity Benchmark},
-  author={Yao Wang and Xin Liu and Zhuochen Liu and Jiankang Chen and Adam Jatowt and Kyoungsook Kim and Noriko Kando and Haitao Yu},
-  year={2026},
-  eprint={2603.17838},
-  archivePrefix={arXiv},
-  primaryClass={cs.CL},
-  url={https://arxiv.org/abs/2603.17838}
-}
-```
