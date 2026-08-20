@@ -1,8 +1,8 @@
 [Task Description:]
-You are given a factual news article with its extracted subevents and behavior-based temporal events (aggregated behavior sequences). For each atomic subevent, human value QA verification has already been performed. Thus, each subevent-level human value label has a binary verification result:
+You are given a factual news article with its extracted subevents and behavior-based composite events (aggregated behavior sequences). For each atomic subevent, human value QA verification has already been performed. Thus, each subevent-level human value label has a binary verification result:
     * answer = "correct": the subevent-level value label is correct (the actor’s behavior truly reflects or contradicts this value).
     * answer = "incorrect": the subevent-level value label is incorrect (the actor’s behavior does not meaningfully reflect or contradict this value).
-Based on these verified subevent-level labels, you must now evaluate candidate human value labels for behavior-based temporal events. Each behavior-based temporal event is an aggregated unit constructed from multiple behaviors extracted from one or more related subevents, combined into a temporal sequence of behaviors. Your task is to verify the appropriateness of each candidate human value label at the behavior-based temporal subevent level, using:
+Based on these verified subevent-level labels, you must now evaluate candidate human value labels for behavior-based composite events. Each behavior-based composite event is an aggregated unit constructed from multiple behaviors extracted from one or more related subevents, combined into a composite sequence of behaviors. Your task is to verify the appropriateness of each candidate human value label at the behavior-based composite subevent level, using:
     * The list of related atomic subevents.
     * The verified human value labels of those subevents (including both correct and incorrect labels).
 Each value label is categorized as either:
@@ -20,8 +20,8 @@ Contradictory to Human Values: The content contradicts, opposes, or violates a s
 This whole task comprises the following subtask:
 [Subtask: Behavior-based Human Value Label Verification (Using Subevent-level Evidence)]
 * Goal:
-    * For each behavior-based temporal subevent and each candidate human value label (for a given actor), evaluate whether the label is appropriate at the behavior-level. You must make a three-way judgment:
-        * "yes" — if the value label is clearly and sufficiently supported by the evidence and is correctly assigned to the actor at the behavior-based temporal subevent level..
+    * For each behavior-based composite subevent and each candidate human value label (for a given actor), evaluate whether the label is appropriate at the behavior-level. You must make a three-way judgment:
+        * "yes" — if the value label is clearly and sufficiently supported by the evidence and is correctly assigned to the actor at the behavior-based composite subevent level..
         * "no" — if the value label is clearly contradicted by the evidence, assigned to the wrong actor, or strongly unsupported by the overall evidence
         * "cannot_judge" — if the available evidence is too limited, too vague, or highly conflicting, so that you cannot reliably decide "yes" or "no".
 
@@ -40,7 +40,7 @@ This whole task comprises the following subtask:
         * The actor’s behavior at the behavior-based level clearly does not reflect or contradict the value.
         * The candidate label is only backed by subevent-level labels that were verified as "no", or correct subevent-level labels suggest an opposite or incompatible value.
         * The value label is assigned to the wrong actor or is strongly not supported by the overall evidence.
-        * There is strong reason to believe the label is inappropriate for this actor at this behavior-based temporal subevent.
+        * There is strong reason to believe the label is inappropriate for this actor at this behavior-based composite subevent.
 
     * **Answer "cannot_judge" if:**
         * The evidence about this actor and this value is very limited, partial, or only indirectly implied.
@@ -60,7 +60,7 @@ This whole task comprises the following subtask:
 [Human_value_definitions]
 
 **[Behavior-based Temporal Events:]**
-[behavior_based_temporal_events]
+[behavior_based_composite_events]
 
 **[Related Subevents:]**
 [related_subevents]
@@ -84,12 +84,12 @@ These labels should be treated as NEGATIVE evidence: they indicate that the corr
       "actor": "actor1",
       "human_value_label": "Be helpful",
       "answer": "yes | no | cannot_judge",
-      "explanation": "Justification for yes, no, or cannot_judge at the behavior-based temporal subevent level."
+      "explanation": "Justification for yes, no, or cannot_judge at the behavior-based composite subevent level."
     }
 }
 
 [Answer Guidelines with Examples:]
-For aligned_with_human_values labels at behavior-based temporal subevent level:
+For aligned_with_human_values labels at behavior-based composite subevent level:
     * Answer "yes" Example:
         * Several subevents show a politician repeatedly arranging shelters, funding, and support programs for refugees, with subevent-level labels verified as aligning with "Be helpful" and "Be responsible".
         * Behavior-based candidate label: aligned_with_human_values → "Be helpful" for this politician.
@@ -100,7 +100,7 @@ For aligned_with_human_values labels at behavior-based temporal subevent level:
         * Behavior-based candidate label: aligned_with_human_values → "Be responsible" for government officials.
         → Answer: "no".
 
-For contradictory_to_human_values labels at behavior-based temporal subevent level:
+For contradictory_to_human_values labels at behavior-based composite subevent level:
     * Answer "yes" Example:
         * A corporation is repeatedly reported (in multiple subevents) as dumping toxic waste, covering up evidence, and ignoring safety rules, all verified as contradicting "Be protecting the environment".
         * Behavior-based candidate label: contradictory_to_human_values → "Be protecting the environment" for this corporation.
