@@ -18,16 +18,18 @@ This file maps the main files and directories in the release. The README explain
 
 ## Experimental Settings
 
-`experimental_settings/` records command-line argument settings for the reported groups:
+`experimental_settings/` records Linux shell commands for the reported groups. Each `.sh` file calls `python unified_value_recognition.py ...` with explicit command-line arguments:
 
 - `G1/`: API-based LLM inference settings.
 - `G2/`: open-source instruct-model inference settings.
 - `G3/`: LoRA fine-tuning settings.
 - `G4/`: TF-IDF and SBERT retrieval baseline settings.
 
+`experimental_settings_debug/` preserves the original debug-style `sys.argv` snippets that were used during development.
+
 The LoRA settings are implemented in `unified_value_recognition.py` with rank 16, alpha 32, dropout 0.05, no bias terms, causal-language-model PEFT, and target modules `q_proj`, `k_proj`, `v_proj`, and `o_proj`.
 
-The G4 settings correspond to `nonllm_retrieval.py` and include TF-IDF/SBERT retrieval options, top-k selection, similarity thresholds, vote thresholds, level filtering, and conflict-resolution parameters.
+The G4 command files correspond to `nonllm_retrieval.py` and include TF-IDF/SBERT retrieval options, top-k selection, similarity thresholds, vote thresholds, level filtering, and conflict-resolution parameters.
 
 ## Dataset Reference Files
 

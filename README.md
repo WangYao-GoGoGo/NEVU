@@ -25,7 +25,8 @@ This repository includes the following release materials:
 - Main experimental runner and inference code: `unified_value_recognition.py` and `inference.py`.
 - Evaluation code: `evaluate.py`.
 - Non-LLM retrieval baselines: `nonllm_retrieval.py`.
-- Experimental settings for G1-G4: `experimental_settings/`.
+- Linux command-line settings for G1-G4: `experimental_settings/`.
+- Original debug-style `sys.argv` settings: `experimental_settings_debug/`.
 - Human-value taxonomy and label mappings: `dataset/hv/`.
 - News-type and ontology reference files: `dataset/news/` and `dataset/wiki_ontology/`.
 - Benchmark-construction prompts and annotation resources: `benchmark_construction_related_resources/`.
@@ -35,7 +36,7 @@ The construction resources are provided for transparency and auditability. They 
 
 ## Experimental Settings
 
-Use `experimental_settings/` as the source for the reported baseline and fine-tuning settings:
+Use `experimental_settings/` as the source for Linux command-line invocations of the reported baseline and fine-tuning settings. The original debug-style settings are preserved in `experimental_settings_debug/`.
 
 - `experimental_settings/G1/`: API-based LLM inference settings.
 - `experimental_settings/G2/`: open-source instruct-model inference settings.
@@ -44,7 +45,7 @@ Use `experimental_settings/` as the source for the reported baseline and fine-tu
 
 The LoRA implementation in `unified_value_recognition.py` uses rank 16, alpha 32, dropout 0.05, no bias terms, causal-language-model PEFT, and target modules `q_proj`, `k_proj`, `v_proj`, and `o_proj`.
 
-The TF-IDF and SBERT baseline settings are recorded in `experimental_settings/G4/` and implemented in `nonllm_retrieval.py`. These settings include retrieval method, top-k selection, similarity filtering, vote thresholding, level filtering, conflict handling, and TF-IDF/SBERT model parameters.
+The TF-IDF and SBERT baseline commands are recorded in `experimental_settings/G4/` and implemented in `nonllm_retrieval.py`. These settings include retrieval method, top-k selection, similarity filtering, vote thresholding, level filtering, conflict handling, and TF-IDF/SBERT model parameters.
 
 ## Benchmark Construction Resources
 
@@ -91,10 +92,10 @@ Install dependencies in a fresh Python environment:
 pip install -r requirements.txt
 ```
 
-Run experiments by following the argument lists in `experimental_settings/`. For example, the G4 TF-IDF retrieval baseline corresponds to the settings in:
+Run experiments by executing the shell command files in `experimental_settings/`. For example, the G4 TF-IDF retrieval baseline can be run from the repository root with:
 
-```text
-experimental_settings/G4/G4_tfidf_config.json
+```bash
+bash experimental_settings/G4/G4_tfidf_config.sh
 ```
 
-The released dataset files should be placed according to the paths expected by the selected configuration, or the paths in the configuration should be adjusted to the local dataset location.
+The released dataset files should be placed according to the paths expected by the selected command, or the paths in the command file should be adjusted to the local dataset location.
