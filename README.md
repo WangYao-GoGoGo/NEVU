@@ -1,69 +1,87 @@
 # Event-Centric Human Value Understanding in News-Domain Texts
 
-This repository contains the reproducibility materials for:
+This repository contains reproducibility and release materials for:
 
-**Event-Centric Human Value Understanding in News-Domain Texts: An Actor-Conditioned, Multi-Granularity Benchmark**
+**Event-Centric Human Value Understanding in News-Domain Texts: An Actor-Conditioned Benchmark across Multi-Scope Event Contexts**
 
-The repository separates materials that reproduce the reported model evaluations from materials that document the benchmark construction process.
+The repository is organized around two goals:
 
-## Release Scope
-
-We release the following materials for reproducibility:
-
-- Inference prompts used for the reported model evaluations: `prompt/canonical_system.txt` and `prompt/canonical_prompt.txt`.
-- Evaluation scripts: `evaluate.py`, `evaluate_deep_analysis2.py`, and the evaluation path in `unified_value_recognition.py`.
-- Baseline and fine-tuning entry points: `unified_value_recognition.py`, `inference.py`, and `nonllm_retrieval.py`.
-- Baseline and fine-tuning settings: `experimental_settings/`.
-- Human-value taxonomy and label mappings: `dataset/hv/`.
-- Split manifest schema and release notes: `data_splits/`.
-- Benchmark construction prompts and reference scripts: `benchmark_construction_related_resources/`.
-
-The construction resources are released for transparency and auditability. They document the prompts, filtering scripts, and annotation-interface templates used during dataset creation, but they are not intended to exactly reconstruct the original collection pipeline because the pipeline depended on third-party news sources, APIs, and blind-test materials that cannot all be redistributed.
+1. Reproduce the reported model-evaluation pipeline with released dataset files.
+2. Document the benchmark-construction prompts and annotation resources used to build the benchmark.
 
 ## Dataset
 
-This repository provides code, prompts, settings, and reproducibility/reference materials only. The dataset files are released separately at:
+This repository provides code, prompts, settings, and reference materials only. The dataset files are released separately at:
 
 https://anonymous.4open.science/r/nevu_repo-5D42/
 
-## Reproducible Evaluation Materials
+The dataset release is expected to provide the released train/dev/public-test files and their corresponding identifiers. Third-party news article text or API responses are not redistributed here when redistribution is restricted by provider terms.
 
-Use `experimental_settings/` as the source for the reported experimental settings. These files record the command-line arguments used for each model group and baseline.
+## Release Scope
 
-Current release configs include:
+This repository includes the following release materials:
+
+- Inference prompts for the reported evaluation pipeline: `prompt/canonical_system.txt` and `prompt/canonical_prompt.txt`.
+- Main experimental runner and inference code: `unified_value_recognition.py` and `inference.py`.
+- Evaluation code: `evaluate.py`.
+- Non-LLM retrieval baselines: `nonllm_retrieval.py`.
+- Experimental settings for G1-G4: `experimental_settings/`.
+- Human-value taxonomy and label mappings: `dataset/hv/`.
+- News-type and ontology reference files: `dataset/news/` and `dataset/wiki_ontology/`.
+- Benchmark-construction prompts and annotation resources: `benchmark_construction_related_resources/`.
+- Dependency list: `requirements.txt`.
+
+The construction resources are provided for transparency and auditability. They document prompts, type classification, event processing, human-value verification, and annotation-interface templates. They are not intended to fully reconstruct the original collection pipeline because some steps depended on third-party sources, APIs, human annotation, and blind-test materials that cannot be redistributed now.
+
+## Experimental Settings
+
+Use `experimental_settings/` as the source for the reported baseline and fine-tuning settings:
 
 - `experimental_settings/G1/`: API-based LLM inference settings.
 - `experimental_settings/G2/`: open-source instruct-model inference settings.
-- `experimental_settings/G3/`: LoRA fine-tuning, LoRA inference, and CGT settings.
+- `experimental_settings/G3/`: LoRA fine-tuning settings.
 - `experimental_settings/G4/`: TF-IDF and SBERT retrieval baseline settings.
 
-The LoRA implementation uses rank 16, alpha 32, dropout 0.05, no bias terms, causal-language-model PEFT, and target modules `q_proj`, `k_proj`, `v_proj`, and `o_proj`. The G4 TF-IDF and SBERT examples include the retrieval voting, top-k, filtering, and conflict-resolution parameters used by `nonllm_retrieval.py`.
+The LoRA implementation in `unified_value_recognition.py` uses rank 16, alpha 32, dropout 0.05, no bias terms, causal-language-model PEFT, and target modules `q_proj`, `k_proj`, `v_proj`, and `o_proj`.
 
-## Data Splits
+The TF-IDF and SBERT baseline settings are recorded in `experimental_settings/G4/` and implemented in `nonllm_retrieval.py`. These settings include retrieval method, top-k selection, similarity filtering, vote thresholding, level filtering, conflict handling, and TF-IDF/SBERT model parameters.
 
-The accepted-release package will include split manifests for:
+## Benchmark Construction Resources
 
-- `train`
-- `dev`
-- `public_test`
-- protected blind-test GUIDs after the blind period ends in January 2027
+`benchmark_construction_related_resources/` contains reference materials for the construction process:
 
-The split files will contain GUID-level membership only, not third-party article text that cannot be redistributed. See `data_splits/README.md` and `data_splits/split_manifest.schema.json` for the intended manifest format.
+- `Phase-1/`: news type classification, possible human-value recognition resources, and keyword resources used during early filtering and collection.
+- `Phase-2/`: event-centric article processing prompts, including actor mapping, article segmentation, news/article type classification, event extraction, and subevent mapping.
+- `Phase-3/`: human-value recognition and verification prompts, QA-based verification prompts, Label Studio annotation templates, and verification prompts based on human-reviewed results.
 
-Some auxiliary analysis materials are also withheld during the blind period. The datasets used for the paper's Multi-Group Candidate Acceptance and Agreement Analysis include blind instances because the sampling procedure preserved type balance. These analysis datasets will be released in January 2027. The Controlled Grouping Test against Heuristic Baselines also uses blind materials and will be released in January 2027.
+The terminology in these prompts follows the paper's naming for composite events:
+
+- `behavior-based composite event`
+- `story-based composite event`
+
+Some files under construction resources are reference-only materials from the original construction workflow. They are useful for auditing the process, but they do not by themselves reproduce the full benchmark because source articles, API responses, and blind materials are not fully redistributable.
+
+## Blind And Withheld Materials
+
+Some materials are withheld during the blind period:
+
+- Protected blind-test GUIDs and labels will be released after the blind period ends in January 2027.
+- The paper's Multi-Group Candidate Acceptance and Agreement Analysis datasets include blind instances because the sampling procedure preserved type balance. These analysis datasets will be released in January 2027.
+- Controlled Grouping Test against Heuristic Baselines materials also include blind materials and will be released in January 2027.
+
+Until then, the release provides public evaluation code, prompt templates, settings, and dataset links for the non-blind release materials.
 
 ## Materials Not Redistributed
 
-Some materials cannot be released in full:
+The following materials are not redistributed in this repository:
 
-- Third-party news article text or API responses when redistribution is restricted by provider terms.
-- Credentials, API keys, private service endpoints, and local machine paths.
-- Blind-test labels or protected GUID mappings before the blind evaluation period ends in January 2027.
-- Multi-Group Candidate Acceptance and Agreement Analysis datasets before January 2027, because they include blind instances sampled to preserve type balance.
-- Controlled Grouping Test against Heuristic Baselines materials before January 2027, because they also include blind materials.
+- Third-party news article text or API responses when redistribution is restricted.
+- Private credentials, API keys, private endpoints, and local machine paths.
+- Protected blind-test labels and protected GUID mappings before January 2027.
+- Multi-Group Candidate Acceptance and Agreement Analysis datasets before January 2027.
+- Controlled Grouping Test materials before January 2027.
 - Full proprietary model weights or third-party model files governed by their original licenses.
-
-Where full redistribution is not permitted, we provide GUID manifests, processing descriptions, prompt templates, and runnable evaluation scripts so that released dataset files can be evaluated consistently.
+- Local development files such as IDE metadata, cache files, and Python bytecode.
 
 ## Basic Usage
 
@@ -73,33 +91,10 @@ Install dependencies in a fresh Python environment:
 pip install -r requirements.txt
 ```
 
-Run a released configuration by following the corresponding argument list in `experimental_settings/`. For example, the G4 TF-IDF baseline corresponds to:
+Run experiments by following the argument lists in `experimental_settings/`. For example, the G4 TF-IDF retrieval baseline corresponds to the settings in:
 
-```bash
-python unified_value_recognition.py \
-  --mode infer \
-  --group G4 \
-  --model_name g4-tfidf-retrieval \
-  --label_space L1 \
-  --train_event dataset/training_dataset_total_formatted.json \
-  --train_hv dataset/train_sub_gold.json \
-  --dev_event dataset/dev_dataset_total_formatted.json \
-  --dev_hv dataset/dev_sub_gold.json \
-  --test_event dataset/test_dataset_total_formatted.json \
-  --test_hv dataset/test_sub_gold.json \
-  --canonical_prompt prompt/canonical_prompt.txt \
-  --canonical_system prompt/canonical_system.txt \
-  --hv1_label_dir dataset/hv/id2hv.json \
-  --hv_label_dir dataset/hv/values.json \
-  --l1tol2_mappings dataset/hv/l1tol2_id_mapping.json \
-  --retrieval_method tfidf \
-  --retrieval_k 5 \
-  --retrieval_vote_threshold 0.3 \
-  --retrieval_min_sim 0.0 \
-  --retrieval_level_filter true \
-  --retrieval_conflict_mode prefer_higher \
-  --tfidf_ngram_max 2 \
-  --tfidf_min_df 2 \
-  --tfidf_max_df 0.95 \
-  --tfidf_max_features 200000
+```text
+experimental_settings/G4/G4_tfidf_config.json
 ```
+
+The released dataset files should be placed according to the paths expected by the selected configuration, or the paths in the configuration should be adjusted to the local dataset location.
