@@ -8,7 +8,7 @@ DEBUG = True
             "--model_name", "meta-llama/Llama-3.1-8B-Instruct",
             "--label_space", "L1",
             "--prompt_variant", "A",
-            "--epochs", "12",
+            "--epochs", "7",
             "--lr", "2e-4",
             "--batch_size", "1",
             "--grad_accum", "8",
