@@ -46,7 +46,7 @@ def create_retry_session():
     session = requests.Session()
     session.mount("https://", adapter)
     session.headers.update({
-        "User-Agent": "WangYao2025/1.0 (yaow2878@gmail.com)"
+        "User-Agent": "xxx"
     })
     return session
 

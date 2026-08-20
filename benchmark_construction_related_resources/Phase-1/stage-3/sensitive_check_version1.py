@@ -30,7 +30,7 @@ def sensitive_check(client, content):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--api_key", required=False, help="API key for accessing the service")
-    parser.add_argument("--config", type=str, default="/tmp/echv_wangyao/config/echv_config_sens_check.json")
+    parser.add_argument("--config", type=str, default="/tmp/echv_xxx/config/echv_config_sens_check.json")
 
     # ************TEST************
     # args = parser.parse_args(["--api_key", "123"])

@@ -102,7 +102,7 @@ def get_articles_from_rss(rss_url):
 
 def get_articles_from_html(base_url, selector, limit=100, headers=None):
     print(f"Visiting: {base_url}")
-    headers = headers or {"User-Agent": "Mozilla/5.0"}
+    headers = headers or {"User-Agent": "xxx"}
     try:
         res = requests.get(base_url, headers=headers, timeout=10)
         if res.status_code != 200:
