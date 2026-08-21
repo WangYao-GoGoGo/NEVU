@@ -108,7 +108,7 @@ This whole task comprises the following subtasks:
             For any original human values that are reassigned to actor groups, both the confidence and explanation fields must be copied exactly from the input, without alteration. This is absolutely critical. Any modification to the original explanation or confidence score is considered a violation of task requirements.
         6.2. For newly added human value labels (i.e., values not found in the input):
             6.2.1. The model must generate a confidence score in scientific notation format (e.g., 9.034560e-01).
-            6.2.2. The model must also provide a concise explanation between 20 and 50 characters in length (in the same language as the article).
+            6.2.2. The model must also provide a concise explanation between 20 and 50 words in length (in the same language as the article).
             6.2.3. These values must be logically attributable to the assigned actor group, and must not conflict with the event context.
         6.3. All human values — both original and newly added — must be properly nested under their respective actor groups in the final JSON structure.
     7. [Human Value Description:] provides reference explanations for each type of human value, clarifying their meanings to aid in accurate identification and classification. The model should use these descriptions when determining relevant human values in the text.

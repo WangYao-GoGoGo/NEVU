@@ -38,7 +38,7 @@ This whole task comprises the following subtask:
 
     * Answer "no" if:
         * The actor’s behavior at the behavior-based composite-event level clearly does not reflect or contradict the value.
-        * The candidate label is only backed by subevent-level labels that were verified as "no", or correct subevent-level labels suggest an opposite or incompatible value.
+        * The candidate label is only backed by subevent-level labels that were verified as "incorrect", or correct subevent-level labels suggest an opposite or incompatible value.
         * The value label is assigned to the wrong actor or is strongly not supported by the overall evidence.
         * There is strong reason to believe the label is inappropriate for this actor at this behavior-based composite event.
 

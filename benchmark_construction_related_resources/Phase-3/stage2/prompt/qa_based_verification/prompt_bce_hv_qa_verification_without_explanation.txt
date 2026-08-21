@@ -71,7 +71,7 @@ This whole task comprises the following subtasks:
                     "actor": "actor1",
                     "human_value_label": "label3",
                     "answer": "yes",
-                    "explanation": "Justification for yes.."
+                    "explanation": "Justification for yes."
                 },
                 {
                     "id": "1",

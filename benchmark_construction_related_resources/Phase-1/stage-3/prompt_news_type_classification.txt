@@ -28,7 +28,7 @@ You are given a factual or semi-factual news article as a single document unit. 
     "Profile_Biography": "Person-centered reporting describing the life, background, experiences, or activities of an individual based on facts, research, and/or interviews.",
     "Review": "Critical or evaluative content concerning creative works, services, products, performances, or consumer experiences.",
     "Satire": "Content using humor, irony, parody, or exaggeration for satirical purposes and not intended to be interpreted as literal factual reporting.",
-    "Unspecified": "Fallback category for noisy, mixed, ambiguous, or out-of-scope items that cannot be reliably assigned to another genre."
+    "Unspecified": "Fallback category for noisy, mixed, ambiguous, or out-of-scope items that cannot be reliably assigned to another news type"
   }
 }
 

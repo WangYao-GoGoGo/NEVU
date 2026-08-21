@@ -1,7 +1,7 @@
 **[Task description]**
-This task consists of 13 subtasks aimed at extracting, structuring, and analyzing events from the given [Article:]. The focus is on breaking down subevents, behaviors, and actions, identifying relationships, and integrating human values into structured representations. Each subtask contributes to a hierarchical event representation, ensuring a comprehensive understanding of how events unfold and their significance in a broader human context.
+This task consists of 6 subtasks aimed at extracting, structuring, and analyzing events from the given [Article:]. The focus is on breaking down subevents, behaviors, and actions, identifying relationships, and integrating human values into structured representations. Each subtask contributes to a hierarchical event representation, ensuring a comprehensive understanding of how events unfold and their significance in a broader human context.
 
-Please consolidate the outputs from all subtasks into a single.
+Please consolidate the outputs from all subtasks into a single valid JSON object.
 
 **[Note: Rules for output format]**
 1 Please provide a complete and detailed response.
@@ -38,7 +38,7 @@ This whole task comprises the following subtasks:
         1. Use value explanations to infer the agents behind each value expression.
         2. Reference value ontology to match value types with likely actor types.
         3. When multiple actors express the same value, differentiate them explicitly.
-    Input: [Article:], [field: "article_human_values"], [field: "subevents_human_values"], [field: "behavior_based_composite_event_human_values"], [field: "story_based_composite_event_human_values"]
+    Input: [Article:], [field: "subevents_human_values"], [field: "behavior_based_composite_event_human_values"], [field: "story_based_composite_event_human_values"]
     Output: [field: "actors"]
 
 [Subtask-2: Subevent Extraction]
@@ -86,7 +86,7 @@ This whole task comprises the following subtasks:
     Input: [Article:], [field: "behaviors"], [field: "subevent"], [field: "argument_mentions"]
     Output: [field: "story_based_composite_events"]
 
-[Subtask-6: Disambiguration]
+[Subtask-6: Disambiguation]
     Goal: Given extracted subevents ([field: "subevents"]), behaviors ([field: "behaviors"]), argument mentions ([field: "argument_mentions"]), action triplets ([field: "action_triplets"]), and story-based composite events ([field: "story_based_composite_events"]), ensure clarity and remove ambiguities.
     Rules:
         1. For each sentence-level subevent ([field: "subevent"]), please ensure that the disambiguated, clarified, and complete content is stored in the [field: "disambiguation"] field.

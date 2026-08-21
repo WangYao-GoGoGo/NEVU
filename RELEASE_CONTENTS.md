@@ -47,10 +47,7 @@ https://anonymous.4open.science/r/nevu_repo-5D42/
 
 ### Phase 1
 
-- `Phase-1/prompt_possible_hv_recogintiontxt`: prompt/resource for possible human-value recognition during early construction.
 - `Phase-1/stage-3/prompt_news_type_classification.txt`: news type classification prompt using the ten-category news type taxonomy.
-- `Phase-1/stage-3/other/`: older or auxiliary article-type and dataset-evaluation prompts retained as reference materials.
-- `Phase-1/stage-2/wikimedia_keywords/`: keyword resources used as reference materials during early source expansion and filtering.
 
 ### Phase 2
 

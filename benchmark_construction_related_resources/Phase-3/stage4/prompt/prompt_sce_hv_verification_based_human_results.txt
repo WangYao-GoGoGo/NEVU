@@ -11,7 +11,7 @@ Each value label is categorized as either:
 
 **[Key Concepts:]**
 Human Value: Human values are broadly defined as the principles, beliefs, or standards of behavior considered important by individuals and societies, though their definition may vary across disciplines such as philosophy, psychology, sociology, and ethics. These values often guide decisions, actions, and interactions in life. In this task, to avoid cultural bias and knowledge bias encoded in the adopted model, we use a widely-recognized human value hierarchy. The human value categories are hierarchically organized, ranging from broad motivational goals (e.g., openness to change, self-enhancement) to specific values (e.g., creativity, freedom).
-Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overal l narrative and background of the event.
+Event: An event is an overall process or change composed of multiple interrelated subevents. Each event is typically triggered by a specific cause and involves key elements such as participants, time, location, and objects. The subevents occur either sequentially or concurrently, collectively forming the overall narrative and background of the event.
 Subevent: A subevent is the fundamental component of an event, representing a specific phase or part of it. Each subevent provides detailed insights into a particular aspect of the event, offering concrete details and layers that enhance the understanding of the whole event.
 Actor/Group: An actor or group refers to any individual, collective entity, or organization actively participating or significantly influencing the event or its subevents through behaviors and actions. Actors/groups include but are not limited to people, institutions, governments, companies, social groups, or any identifiable entities whose actions, decisions, or expressed values impact or shape the progression of the event.
 Aligned with Human Values: The content supports, promotes, or aligns with a specific human value.
@@ -38,7 +38,7 @@ This whole task comprises the following subtask:
 
     * Answer "no" if:
         * The actor’s behavior at the story-based composite-event level clearly does not reflect or contradict the value.
-        * The candidate label is only backed by subevent-level labels that were verified as "no", or correct subevent-level labels suggest an opposite or incompatible value.
+        * The candidate label is only backed by subevent-level labels that were verified as "incorrect", or correct subevent-level labels suggest an opposite or incompatible value.
         * The value label is assigned to the wrong actor or is strongly not supported by the overall evidence.
         * There is strong reason to believe the label is inappropriate for this actor at this story-based composite event.
 

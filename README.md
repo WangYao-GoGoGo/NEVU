@@ -51,7 +51,7 @@ The TF-IDF and SBERT baseline commands are recorded in `experimental_settings/G4
 
 `benchmark_construction_related_resources/` contains reference materials for the construction process:
 
-- `Phase-1/`: news type classification, possible human-value recognition resources, and keyword resources used during early filtering and collection.
+- `Phase-1/`: news type classification resources used during early article filtering.
 - `Phase-2/`: event-centric article processing prompts, including actor mapping, article segmentation, news/article type classification, event extraction, and subevent mapping.
 - `Phase-3/`: human-value recognition and verification prompts, QA-based verification prompts, Label Studio annotation templates, and verification prompts based on human-reviewed results.
 
