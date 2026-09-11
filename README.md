@@ -13,7 +13,7 @@ The repository is organized around two goals:
 
 This repository provides code, prompts, settings, and reference materials only. The dataset files are released separately at:
 
-https://anonymous.4open.science/r/nevu_repo-5D42/
+[https://anonymous.4open.science/r/nevu_repo-5D42/](https://github.com/WangYao-GoGoGo/nevu_repo/)
 
 The dataset release is expected to provide the released train/dev/public-test files and their corresponding identifiers. Third-party news article text or API responses are not redistributed here when redistribution is restricted by provider terms.
 
